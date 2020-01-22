@@ -1,0 +1,7 @@
+root = true
+
+[*]
+max_line_length = 160
+
+[*.html]
+max_line_length = 200
