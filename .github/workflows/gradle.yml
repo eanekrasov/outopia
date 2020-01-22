@@ -15,3 +15,8 @@ jobs:
         java-version: 1.8
     - name: Build with Gradle
       run: ./gradlew build
+    - name: Upload artifact
+      uses: actions/upload-artifact@v1
+      with:
+        name: server
+        path: server/build/libs/server-0.0.1-SNAPSHOT.jar
