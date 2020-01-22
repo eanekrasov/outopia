@@ -8,13 +8,10 @@ pluginManagement {
     val dependencyManagementVersion: String by settings
 
     plugins {
+        id("org.jetbrains.kotlin.jvm") version kotlinVersion
+        id("org.jetbrains.kotlin.plugin.spring") version kotlinVersion
+        id("org.jetbrains.kotlin.plugin.serialization") version kotlinVersion
         id("org.springframework.boot") version springBootVersion
         id("io.spring.dependency-management") version dependencyManagementVersion
-    }
-
-    resolutionStrategy {
-        eachPlugin {
-            if (requested.id.namespace?.startsWith("org.jetbrains.kotlin") == true) useVersion(kotlinVersion)
-        }
     }
 }
