@@ -1,8 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
 
-<!--/*@thymesVar id="height" type="java.lang.Integer"*/-->
-<!--/*@thymesVar id="width" type="java.lang.Integer"*/-->
+<!--/*@thymesVar id="player" type="ru.o4fun.models.PlayerImpl"*/-->
 
 <head>
     <meta charset="utf-8"/>
@@ -20,19 +19,46 @@
     <script type="modulepreload" src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js" th:src="@{/webjars/popper.js/dist/umd/popper.js}"></script>
     <script type="modulepreload" src="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" th:src="@{/webjars/bootstrap/dist/js/bootstrap.min.js}"></script>
     <script type="module" src="../static/Cell.js" th:src="@{/Cell.js}"></script>
+    <script type="module" src="../static/Socket.js" th:src="@{/Socket.js}"></script>
     <script type="module" src="../static/logic.js" th:src="@{/logic.js}"></script>
 </head>
 <body>
-<div class="table-responsive">
-    <table class="table" id="world">
-        <tbody>
-        <tr th:each="y: ${#numbers.sequence(0, height)}">
-            <td th:each="x: ${#numbers.sequence(0, width)}">
-                <outopia-cell th:attr="x=${x},y=${y},value=${@playersService.get('coder').isRevealed(x, y)}"></outopia-cell>
-            </td>
-        </tr>
-        </tbody>
-    </table>
-</div>
+<nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
+    <a class="navbar-brand" th:href="@{/}">Outopia</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar-primary"
+            aria-controls="navbar-primary" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbar-primary">
+        <ul class="navbar-nav mr-auto">
+            <li class="nav-item"><a class="nav-link" th:href="@{/}">World (table)</a></li>
+            <li class="nav-item"><a class="nav-link" th:href="@{/map}">World (map)</a></li>
+            <li class="nav-item"><a class="nav-link" th:href="@{/players}">Players</a></li>
+            <li class="nav-item"><a class="nav-link" th:href="@{/squads}">Squads</a></li>
+        </ul>
+    </div>
+</nav>
+<script th:inline="javascript" type="module">
+    import {Socket} from "/Socket.js";
+
+    const id = /*[[${player.id}]]*/ "";
+
+    Socket.start("/ws/client", {id});
+
+</script>
+<table>
+    <thead>
+    <tr>
+        <th th:each="res: ${player.resources}" th:text="${res.key}">0</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+        <td th:each="res: ${player.resources}" th:id="'resource-' + ${res.key}" th:text="${res.value}">0</td>
+    </tr>
+    </tbody>
+</table>
+
+<a th:href="@{/players/{id}/map(id=${player.id})}">map</a>
 </body>
 </html>

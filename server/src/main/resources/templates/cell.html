@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+
+<!--/*@thymesVar id="cell" type="ru.o4fun.interfaces.Cell"*/-->
+
+<head>
+    <meta charset="utf-8"/>
+    <meta content="IE=edge" http-equiv="X-UA-Compatible"/>
+    <meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport"/>
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <meta name="description" content=""/>
+    <meta name="author" content=""/>
+    <link rel="icon" th:href="@{/favicon.ico}"/>
+    <title th:text="#{brand}">#{brand}</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" media="all" rel="stylesheet" th:href="@{/webjars/bootstrap/dist/css/bootstrap.min.css}" type="text/css"/>
+    <link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" media="all" rel="stylesheet" th:href="@{/webjars/font-awesome/css/font-awesome.css}" type="text/css"/>
+    <link href="../static/main.css" media="all" rel="stylesheet" th:href="@{/main.css}" type="text/css"/>
+    <script type="modulepreload" src="https://code.jquery.com/jquery-3.4.1.slim.min.js" th:src="@{/webjars/jquery/dist/jquery.min.js}"></script>
+    <script type="modulepreload" src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js" th:src="@{/webjars/popper.js/dist/umd/popper.js}"></script>
+    <script type="modulepreload" src="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" th:src="@{/webjars/bootstrap/dist/js/bootstrap.min.js}"></script>
+    <style>
+        .game-background {
+            background-image: url("/img/city-min.png");
+            background-color: green;
+            background-position: center top;
+            background-repeat: no-repeat;
+            position: relative;
+            width: 100%;
+            height: 700px;
+
+        }
+
+        .game-container {
+            margin: 0 auto;
+            position: relative;
+            width: 1260px;
+            height: 700px;
+        }
+
+        .game-city {
+            /*position: relative;*/
+            /*min-height: 700px;*/
+            /*padding-top: 60px;*/
+        }
+
+        .bank {
+            position: absolute;
+            left: 542px;
+            top: 166px;
+            background: transparent url("/img/city/bank.png") no-repeat left top / contain;
+            width: 250px;
+            height: 250px;
+        }
+
+        .barracks {
+            position: absolute;
+            left: 643px;
+            top: 315px;
+            background: transparent url("/img/city/barracks.png") no-repeat left top / contain;
+            width: 250px;
+            height: 150px;
+        }
+
+        .bunker {
+            position: absolute;
+            left: 626px;
+            top: 425px;
+            background: transparent url("/img/city/bunker.png") no-repeat left top / contain;
+            width: 250px;
+            height: 150px;
+        }
+
+        .embassy {
+            position: absolute;
+            left: 422px;
+            top: 65px;
+            background: transparent url("/img/city/embassy.png") no-repeat left top / contain;
+            width: 350px;
+            height: 400px;
+        }
+
+        .factory {
+            position: absolute;
+            left: 359px;
+            top: 387px;
+            background: transparent url("/img/city/factory.png") no-repeat left top / contain;
+            width: 250px;
+            height: 200px;
+        }
+
+        .hospital {
+            position: absolute;
+            left: 350px;
+            top: 290px;
+            background: transparent url("/img/city/hospital.png") no-repeat left top / contain;
+            width: 200px;
+            height: 150px;
+        }
+
+        .machine-building {
+            position: absolute;
+            left: 475px;
+            top: 338px;
+            background: transparent url("/img/city/machine-building.png") no-repeat left top / contain;
+            width: 300px;
+            height: 200px;
+        }
+
+        .mine {
+            position: absolute;
+            left: -84px;
+            top: 274px;
+            background: transparent url("/img/city/mine.png") no-repeat left top / contain;
+            width: 450px;
+            height: 250px;
+        }
+
+        .oil-derrick {
+            position: absolute;
+            left: 115px;
+            top: 264px;
+            background: transparent url("/img/city/oil-derrick.png") no-repeat left top / contain;
+            width: 300px;
+            height: 150px;
+        }
+
+        .pit {
+            position: absolute;
+            left: -73px;
+            top: 410px;
+            background: transparent url("/img/city/pit.png") no-repeat left top / contain;
+            width: 500px;
+            height: 350px;
+        }
+
+        .quarters {
+            position: absolute;
+            left: 790px;
+            top: 253px;
+            background: transparent url("/img/city/quarters.png") no-repeat left top / contain;
+            width: 250px;
+            height: 150px;
+        }
+
+        .road {
+            position: absolute;
+            left: -137px;
+            top: 222px;
+            background: transparent url("/img/city/road.png") no-repeat left top / contain;
+            width: 1400px;
+            height: 250px;
+        }
+
+        .warehouse {
+            position: absolute;
+            left: 472px;
+            top: 454px;
+            background: transparent url("/img/city/warehouse.png") no-repeat left top / contain;
+            width: 400px;
+            height: 250px;
+        }
+    </style>
+</head>
+<body>
+<nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
+    <a class="navbar-brand" th:href="@{/}">Outopia</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar-primary"
+            aria-controls="navbar-primary" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbar-primary">
+        <ul class="navbar-nav mr-auto">
+            <li class="nav-item"><a class="nav-link" th:href="@{/}">World (table)</a></li>
+            <li class="nav-item"><a class="nav-link" th:href="@{/map}">World (map)</a></li>
+            <li class="nav-item"><a class="nav-link" th:href="@{/players}">Players</a></li>
+            <li class="nav-item"><a class="nav-link" th:href="@{/squads}">Squads</a></li>
+        </ul>
+    </div>
+</nav>
+
+<div class="game-background">
+    <div class="game-container">
+        <div class="game-city">
+            <th:block th:each="it : ${cell.value}">
+                <th:block th:if="${it instanceof T(ru.o4fun.interfaces.Value.Barracks)}">
+                    <div class="building barracks">
+                        <p>level: <span th:text="${it.level}"></span></p>
+                        <ul><li th:each="unit: ${it.units}"><span th:text="${it.key}"></span> <span th:text="${it.value}"></span></li></ul>
+                    </div>
+                </th:block>
+            </th:block>
+            <div class="building road"></div>
+            <div class="building embassy"></div>
+            <div class="building bank"></div>
+            <div class="building oil-derrick"></div>
+            <div class="building hospital"></div>
+            <div class="building quarters"></div>
+            <div class="building mine"></div>
+            <div class="building machine-building"></div>
+            <div class="building bunker"></div>
+            <div class="building factory"></div>
+            <div class="building warehouse"></div>
+            <div class="building pit"></div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

@@ -1,9 +1,6 @@
 import {get} from "./utils.js";
 
-export async function getValue(id, x, y) {
-    return await get(`outopia/getValue`, {id, x, y});
-}
-
-export async function reveal(id, x, y) {
-    return await get(`outopia/reveal`, {id, x, y});
+// noinspection JSUnusedGlobalSymbols
+export async function value(x, y) {
+    return await get(`outopia/value`, {x, y});
 }

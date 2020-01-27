@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+
+<!--/*@thymesVar id="player" type="ru.o4fun.interfaces.Player"*/-->
+<!--/*@thymesVar id="height" type="java.lang.Integer"*/-->
+<!--/*@thymesVar id="width" type="java.lang.Integer"*/-->
+
+<head>
+    <meta charset="utf-8"/>
+    <meta content="IE=edge" http-equiv="X-UA-Compatible"/>
+    <meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport"/>
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <meta name="description" content=""/>
+    <meta name="author" content=""/>
+    <link rel="icon" th:href="@{/favicon.ico}"/>
+    <title th:text="#{brand}">#{brand}</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" media="all" rel="stylesheet" th:href="@{/webjars/bootstrap/dist/css/bootstrap.min.css}" type="text/css"/>
+    <link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" media="all" rel="stylesheet" th:href="@{/webjars/font-awesome/css/font-awesome.css}" type="text/css"/>
+    <link media="all" rel="stylesheet" th:href="@{/webjars/leaflet/dist/leaflet.css}" type="text/css"/>
+    <link href="../static/main.css" media="all" rel="stylesheet" th:href="@{/main.css}" type="text/css"/>
+    <script type="modulepreload" src="https://code.jquery.com/jquery-3.4.1.slim.min.js" th:src="@{/webjars/jquery/dist/jquery.min.js}"></script>
+    <script type="modulepreload" src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js" th:src="@{/webjars/popper.js/dist/umd/popper.js}"></script>
+    <script type="modulepreload" src="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" th:src="@{/webjars/bootstrap/dist/js/bootstrap.min.js}"></script>
+    <script th:src="@{/webjars/leaflet/dist/leaflet.js}"></script>
+    <style>
+        html, body {
+            height: 100%;
+        }
+
+        #map {
+            height: 100%;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+<nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
+    <a class="navbar-brand" th:href="@{/}">Outopia</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar-primary"
+            aria-controls="navbar-primary" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbar-primary">
+        <ul class="navbar-nav mr-auto">
+            <li class="nav-item"><a class="nav-link" th:href="@{/}">World (table)</a></li>
+            <li class="nav-item"><a class="nav-link" th:href="@{/map}">World (map)</a></li>
+            <li class="nav-item"><a class="nav-link" th:href="@{/players}">Players</a></li>
+            <li class="nav-item"><a class="nav-link" th:href="@{/squads}">Squads</a></li>
+        </ul>
+    </div>
+</nav>
+<div id="map"></div>
+<th:block th:each="cell : ${player.owned}">
+    <p class="hidden" th:attr="data-x=${cell.x},data-y=${cell.y},data-owner=${player.id}"></p>
+</th:block>
+<script th:inline="javascript">
+
+    const id = /*[[${player.id}]]*/ "";
+    const height = /*[[${height}]]*/ 1;
+    const width = /*[[${width}]]*/ 1;
+
+    L.TileLayer.Outopia = L.TileLayer.extend({
+        getTileUrl: (coords) => `/players/${id}/map/${coords.z}/${coords.x}/${coords.y}`,
+        getAttribution: () => "Outopia"
+    });
+    L.tileLayer.outopia = () => new L.TileLayer.Outopia();
+
+    L.GridLayer.DebugCoords = L.GridLayer.extend({
+        createTile: (coords) => {
+            let tile = document.createElement('div');
+            tile.innerHTML = `${coords.x},${coords.y},${coords.z}`;
+            tile.style.outline = '1px solid red';
+            return tile;
+        }
+    });
+    L.gridLayer.debugCoords = (opts) => new L.GridLayer.DebugCoords(opts);
+
+    const map = L.map("map", {
+        crs: L.CRS.Simple,
+        minZoom: 0,
+        maxZoom: 5
+    }).setView([-width / 2, height / 2], 1);
+    L.tileLayer.outopia().addTo(map);
+    map.addLayer(L.gridLayer.debugCoords());
+
+    Array.from(document.querySelectorAll("p.hidden")).forEach(it => {
+        let x = Number(it.dataset.x) + 0.5;
+        let y = Number(it.dataset.y) + 0.5;
+        L.marker(L.latLng([-x, y])).addTo(map);
+    })
+
+</script>
+</body>
+</html>

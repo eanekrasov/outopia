@@ -12,6 +12,7 @@ export async function get(url, params) {
     return await call(url + args(params));
 }
 
+// noinspection JSUnusedGlobalSymbols
 export async function post(url, body) {
     return await call(url, {
         method: "POST",

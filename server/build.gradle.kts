@@ -49,7 +49,9 @@ dependencies {
     implementation(starter("data-jpa"))
     implementation(starter("thymeleaf"))
     implementation(starter("web"))
+//    implementation(starter("security"))
     implementation(starter("websocket"))
+    implementation(starter("test"))
     runtime("org.springframework.boot:spring-boot-devtools:$springBootVersion")
 
     // endregion
@@ -63,6 +65,7 @@ dependencies {
     bower("jquery", "3.4.1")
     bower("popper.js", "1.16.0")
     bower("font-awesome", "4.7.0")
+    bower("leaflet", "1.4.0")
 
     // endregion
 
@@ -71,6 +74,11 @@ dependencies {
     runtime("mysql:mysql-connector-java")
 
     // endregion
+
+//    #https://habr.com/ru/post/479954/
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
+//    implementation("de.codecentric:spring-boot-admin-starter-server")
+//    implementation("de.codecentric:spring-boot-admin-starter-client")
 
 }
 

@@ -1,6 +1,11 @@
-import {socket} from "./Socket.js";
+import {Socket} from "./Socket.js";
 
 (async function () {
-    socket.eventListener('getValue').add((e) => console.log("got getValue", e));
-    socket.eventListener('reveal').add((e) => console.log("got reveal", e));
+    Socket.socket(socket => {
+        socket.eventListener('resources').add((e) => {
+            Object.keys(e.value).forEach(k => {
+                document.querySelector(`#resource-${k}`).innerHTML = e.value[k];
+            });
+        });
+    });
 })();
