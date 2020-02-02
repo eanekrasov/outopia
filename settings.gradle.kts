@@ -1,6 +1,6 @@
 rootProject.name = "Outopia"
 
-include(":server")
+include(":server", ":js", ":shared")
 
 pluginManagement {
     val kotlinVersion: String by settings
@@ -17,6 +17,8 @@ pluginManagement {
     }
 
     plugins {
+        id("org.jetbrains.kotlin.js") version kotlinVersion
+        id("org.jetbrains.kotlin.multiplatform") version kotlinVersion
         id("org.jetbrains.kotlin.jvm") version kotlinVersion
         id("org.jetbrains.kotlin.plugin.spring") version kotlinVersion
         id("org.jetbrains.kotlin.plugin.serialization") version kotlinVersion

@@ -13,20 +13,32 @@ plugins {
     id("io.spring.dependency-management")
 }
 
-tasks.withType<KotlinCompile> {
-    kotlinOptions {
-        jvmTarget = "1.8"
-        freeCompilerArgs = freeCompilerArgs + arrayOf(
-            "-Xjsr305=strict",
-            "-Xjvm-default=enable",
-            "-Xuse-experimental=kotlinx.serialization.UnstableDefault",
-            "-Xuse-experimental=kotlinx.serialization.ImplicitReflectionSerializer"
-        )
+tasks {
+    withType<KotlinCompile> {
+        kotlinOptions {
+            jvmTarget = "1.8"
+            freeCompilerArgs = freeCompilerArgs + arrayOf(
+                "-Xjsr305=strict",
+                "-Xjvm-default=enable",
+                "-Xuse-experimental=kotlinx.serialization.UnstableDefault",
+                "-Xuse-experimental=kotlinx.serialization.ImplicitReflectionSerializer"
+            )
+        }
+        dependsOn("processResources")
     }
-    dependsOn("processResources")
+    processResources {
+        dependsOn(":js:browserWebpack")
+        from(project(":js").projectDir.resolve("src/main/resources")) {
+            into("static")
+        }
+        from(project(":js").buildDir.resolve("libs/Outopia-js.js"))  {
+            into("static")
+        }
+    }
 }
 
 dependencies {
+    implementation(project(":shared"))
 
     // region Kotlin
 
