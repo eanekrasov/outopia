@@ -8,8 +8,3 @@ interface Cell {
     val discoveredBy: Set<Player>
     val type: CellType
 }
-
-enum class CellType {
-    DEFAULT,
-    FOREST
-}
