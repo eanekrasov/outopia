@@ -6,8 +6,11 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonConfiguration
 import kotlinx.serialization.stringify
 import org.springframework.web.socket.TextMessage
+import ru.o4fun.Building
 import ru.o4fun.Resource
-import ru.o4fun.models.*
+import ru.o4fun.models.PlayerImpl
+import ru.o4fun.models.SquadUnit
+import ru.o4fun.models.ValueImpl
 
 @Serializable
 sealed class Outgoing {
@@ -63,10 +66,11 @@ sealed class Outgoing {
     ) : Outgoing()
 
     @Serializable
-    @SerialName("barracksUpgraded")
-    class BarracksUpgraded(
+    @SerialName("buildingUpgraded")
+    class BuildingUpgraded(
         val x: Int = 0,
         val y: Int = 0,
+        val building: Building = Building.Barracks,
         val level: Int = 0
     ) : Outgoing()
 

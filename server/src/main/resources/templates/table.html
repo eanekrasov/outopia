@@ -57,12 +57,12 @@
             <p th:text="${world.get(x,y).value.size}"></p>
             <th:block th:with="cell=${world.get(x,y)}">
                 <p><a th:if="${cell.owner != null}" th:href="@{/players/{id}(id=${cell.owner.id})}" th:text="${cell.owner.id}"></a></p>
+                <p><span th:each="unit : ${cell.units}" th:text="${unit.key} + ' ' + ${unit.value}"></span></p>
                 <ul class="values" th:if="${cell.value.size > 0}">
                     <li th:each="it: ${cell.value}">
-                        <th:block th:if="${it instanceof T(ru.o4fun.interfaces.Value.Barracks)}">
-                            <span>city</span>
+                        <th:block th:if="${it instanceof T(ru.o4fun.interfaces.Value.Building)}">
+                            <span th:text="${it.building}"></span>
                             <span th:text="${it.level}"></span>
-                            <span th:each="unit : ${it.units}" th:text="${unit.key} + ' ' + ${unit.value}"></span>
                         </th:block>
                         <th:block th:if="${it instanceof T(ru.o4fun.interfaces.Value.Field)}">
                             <span th:text="${it.resource}"></span>

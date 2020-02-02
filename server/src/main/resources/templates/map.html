@@ -89,7 +89,7 @@
     Array.from(document.querySelectorAll("p.hidden")).forEach(it => {
         let x = Number(it.dataset.x) + 0.5;
         let y = Number(it.dataset.y) + 0.5;
-        L.marker(L.latLng([-x, y])).addTo(map).bindPopup(it.dataset.owner);
+        L.marker(L.latLng([-x, y])).addTo(map).bindPopup(`<a href="/cells/${it.dataset.x}/${it.dataset.y}">${it.dataset.owner}</a>`);
     })
 
 </script>

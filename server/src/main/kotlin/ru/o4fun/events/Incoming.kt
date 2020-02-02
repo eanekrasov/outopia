@@ -3,6 +3,7 @@ package ru.o4fun.events
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
+import ru.o4fun.Building
 import ru.o4fun.Resource
 import ru.o4fun.models.SquadUnit
 
@@ -12,7 +13,7 @@ sealed class Incoming {
     open val x: Int = 0
     @Transient
     open val y: Int = 0
-    
+
     @Serializable
     @SerialName("unitBuy")
     class UnitBuy(
@@ -46,10 +47,11 @@ sealed class Incoming {
     ) : Incoming()
 
     @Serializable
-    @SerialName("barracksUpgrade")
-    class BarracksUpgrade(
+    @SerialName("buildingUpgrade")
+    class BuildingUpgrade(
         override val x: Int = 0,
-        override val y: Int = 0
+        override val y: Int = 0,
+        val building: Building = Building.Barracks
     ) : Incoming()
 
     @Serializable

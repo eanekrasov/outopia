@@ -99,26 +99,25 @@ class Engine {
         if (processed.isNotEmpty()) {
             squads.removeAll(processed)
             val grouped = processed.groupBy { it.target }
-            grouped.map { (city, list) ->
+            grouped.map { (cell, list) ->
                 async {
-                    val cell = city.cell
-                    list.filter { cell.owner == it.owner }.forEach { city.addUnits(it.units) }
+                    list.filter { cell.owner == it.owner }.forEach { cell.addUnits(it.units) }
                     val attackers = list.filter { cell.owner != it.owner }
                     attackers.forEach { squad ->
-                        println("${squad.units} attacks ${city.units} ${city.cell.x} ${city.cell.y}")
+                        println("${squad.units} attacks ${cell.units} ${cell.x} ${cell.y}")
                         val attacker = squad.units.toMutableMap()
-                        attacker.strike(city.units)
-                        if (city.units.hasUnits()) {
-                            city.units.strike(attacker)
+                        attacker.strike(cell.units)
+                        if (cell.units.hasUnits()) {
+                            cell.units.strike(attacker)
                             if (attacker.hasUnits()) {
-                                squads.add(SquadImpl(squad.owner, city, squad.origin, attacker))
+                                squads.add(SquadImpl(squad.owner, cell, squad.origin, attacker))
                             } else {
                                 squad.owner.send(squad.destroyedEvent(), true)
                             }
                         } else {
                             cell.owner?.owned?.remove(cell)
                             squad.owner.owned.add(cell)
-                            city.addUnits(attacker)
+                            cell.addUnits(attacker)
                             cell.sendAll(cell.ownedEvent(), true)
                         }
                     }
@@ -130,18 +129,15 @@ class Engine {
     private fun PlayerImpl.onIncomingEvent(e: Incoming): Boolean = try {
         val cell = cells[e.x][e.y]
         when (e) {
-            is Incoming.SquadSend -> cell.cityIn { origin ->
-                if (origin.cell.owner == this) cells[e.tx][e.ty].cityIn { target ->
-                    origin.tryTakeUnits(e.units) {
-                        val squad = SquadImpl(this, origin, target, e.units)
-                        println("$id sending ${squad.units} from ${e.x} ${e.y} to ${e.tx} ${e.ty} (${squad.timeout})")
-                        squads.add(squad)
-                        origin.cell.sendAll(squad.sentEvent(), true)
-                    }
-                }
+            is Incoming.SquadSend -> if (cell.owner == this) cell.tryTakeUnits(e.units) {
+                val target = cells[e.tx][e.ty]
+                val squad = SquadImpl(this, cell, target, e.units)
+                println("$id sending ${squad.units} from ${e.x} ${e.y} to ${e.tx} ${e.ty} (${squad.timeout})")
+                squads.add(squad)
+                cell.sendAll(squad.sentEvent(), true)
             }
-            is Incoming.UnitBuy -> if (cell.owner == this) cell.cityIn {
-                if (tryTakeResources(e.units.cost) { it.addUnits(e.units) }) {
+            is Incoming.UnitBuy -> if (cell.owner == this) {
+                if (tryTakeResources(e.units.cost) { cell.addUnits(e.units) }) {
                     cell.sendAll(e.boughtEvent(), true)
                 }
             }
@@ -153,7 +149,7 @@ class Engine {
                 owned.add(cell)
                 cell.sendAll(cell.ownedEvent(), true)
             }
-            is Incoming.BarracksUpgrade -> if (cell.owner == this) cell.cityIn {
+            is Incoming.BuildingUpgrade -> if (cell.owner == this) cell.buildingIn(e.building) {
                 if (tryTakeResources(it.upgradeCost) { it.level++ }) {
                     cell.sendAll(it.upgradedEvent(), true)
                 }
@@ -191,11 +187,11 @@ class Engine {
     inner class CellScope(
         val cell: CellImpl
     ) {
-        fun field(resource: Resource, level: Int = 1, callback: (ValueImpl.FieldImpl) -> Unit = {}) =
-            call(callback, { it.resource == resource }) { ValueImpl.FieldImpl(cell, resource, level) }
+        fun field(which: Resource, level: Int = 1, callback: (ValueImpl.FieldImpl) -> Unit = {}) =
+            call(callback, { it.resource == which }) { ValueImpl.FieldImpl(cell, which, level) }
 
-        fun city(callback: (ValueImpl.BarracksImpl) -> Unit = {}) =
-            call(callback) { ValueImpl.BarracksImpl(cell) }
+        fun building(which: Building, level: Int = 1, callback: (ValueImpl.BuildingImpl) -> Unit = {}) =
+            call(callback, { it.building == which }) { ValueImpl.BuildingImpl(cell, which, level) }
 
         private inline fun <reified T : ValueImpl> call(callback: (T) -> Unit, denyIf: (T) -> Boolean = { true }, init: () -> T?) =
             if (!cell.value.any { it is T && denyIf(it) }) init()?.also {

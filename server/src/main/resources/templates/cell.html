@@ -181,26 +181,14 @@
 <div class="game-background">
     <div class="game-container">
         <div class="game-city">
+            <ul><li th:each="unit: ${cell.units}"><span th:text="${unit.key}"></span> <span th:text="${unit.value}"></span></li></ul>
             <th:block th:each="it : ${cell.value}">
-                <th:block th:if="${it instanceof T(ru.o4fun.interfaces.Value.Barracks)}">
-                    <div class="building barracks">
-                        <p>level: <span th:text="${it.level}"></span></p>
-                        <ul><li th:each="unit: ${it.units}"><span th:text="${it.key}"></span> <span th:text="${it.value}"></span></li></ul>
+                <th:block th:if="${it instanceof T(ru.o4fun.interfaces.Value.Building)}">
+                    <div class="building" th:classappend="${it.building.className}">
+                        <p th:text="${it.building.className} + ': ' + ${it.level}"></p>
                     </div>
                 </th:block>
             </th:block>
-            <div class="building road"></div>
-            <div class="building embassy"></div>
-            <div class="building bank"></div>
-            <div class="building oil-derrick"></div>
-            <div class="building hospital"></div>
-            <div class="building quarters"></div>
-            <div class="building mine"></div>
-            <div class="building machine-building"></div>
-            <div class="building bunker"></div>
-            <div class="building factory"></div>
-            <div class="building warehouse"></div>
-            <div class="building pit"></div>
         </div>
     </div>
 </div>

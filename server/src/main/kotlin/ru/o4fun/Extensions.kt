@@ -5,7 +5,6 @@ import ru.o4fun.events.Incoming
 import ru.o4fun.events.Outgoing
 import ru.o4fun.interfaces.Cell
 import ru.o4fun.interfaces.Player
-import ru.o4fun.interfaces.Value
 import ru.o4fun.models.*
 import java.util.*
 import kotlin.math.min
@@ -71,10 +70,10 @@ infix fun Cell.distance(cell: Cell) = sqrt(((x - cell.x) * (x - cell.x) + (y - c
 
 fun Player.hasResources(which: Map<Resource, Long>) = which.all { resources.getOrDefault(it.key, 0) >= it.value }
 
-fun Value.Barracks.hasUnits(which: Map<SquadUnit, Long>) = which.all { units.getOrDefault(it.key, 0) >= it.value }
+fun Cell.hasUnits(which: Map<SquadUnit, Long>) = which.all { units.getOrDefault(it.key, 0) >= it.value }
 
-fun Cell.cityIn(callback: (ValueImpl.BarracksImpl) -> Unit) = value.forEach {
-    if (it is ValueImpl.BarracksImpl) callback(it)
+fun Cell.buildingIn(which: Building, callback: (ValueImpl.BuildingImpl) -> Unit) = value.forEach {
+    if (it is ValueImpl.BuildingImpl && it.building == which) callback(it)
 }
 
 fun Cell.fieldIn(which: Resource, callback: (ValueImpl.FieldImpl) -> Unit) = value.forEach {
@@ -91,7 +90,7 @@ fun PlayerImpl.tryTakeResources(which: Map<Resource, Long>, callback: () -> Unit
     false
 }
 
-fun ValueImpl.BarracksImpl.tryTakeUnits(which: Map<SquadUnit, Long>, callback: () -> Unit) = try {
+fun CellImpl.tryTakeUnits(which: Map<SquadUnit, Long>, callback: () -> Unit) = try {
     if (hasUnits(which)) {
         callback()
         minusUnits(which)
@@ -104,10 +103,10 @@ fun ValueImpl.BarracksImpl.tryTakeUnits(which: Map<SquadUnit, Long>, callback: (
 fun PlayerImpl.minusResources(which: Map<Resource, Long>) =
     which.forEach { resources[it.key] = resources.getOrDefault(it.key, 0) - it.value }
 
-fun ValueImpl.BarracksImpl.minusUnits(which: Map<SquadUnit, Long>) =
+fun CellImpl.minusUnits(which: Map<SquadUnit, Long>) =
     which.forEach { (unit, amount) -> units[unit] = units.getOrDefault(unit, 0) - amount }
 
-fun ValueImpl.BarracksImpl.addUnits(which: Map<SquadUnit, Long>) =
+fun CellImpl.addUnits(which: Map<SquadUnit, Long>) =
     which.forEach { (unit, amount) -> units[unit] = units.getOrDefault(unit, 0) + amount }
 
 fun Map<SquadUnit, Long>.hasUnits() = any { unit -> unit.value > 0 }
@@ -127,9 +126,9 @@ fun PlayerImpl.updateResources() = owned.forEach { cell ->
     }
 }
 
-fun SquadImpl.destroyedEvent() = Outgoing.SquadDestroyed(origin.cell.x, origin.cell.y, target.cell.x, target.cell.y, units)
-fun SquadImpl.sentEvent() = Outgoing.SquadSent(origin.cell.x, origin.cell.y, target.cell.x, target.cell.y, units)
-fun ValueImpl.BarracksImpl.upgradedEvent() = Outgoing.BarracksUpgraded(cell.x, cell.y, level)
+fun SquadImpl.destroyedEvent() = Outgoing.SquadDestroyed(origin.x, origin.y, target.x, target.y, units)
+fun SquadImpl.sentEvent() = Outgoing.SquadSent(origin.x, origin.y, target.x, target.y, units)
+fun ValueImpl.BuildingImpl.upgradedEvent() = Outgoing.BuildingUpgraded(cell.x, cell.y, building, level)
 fun ValueImpl.FieldImpl.upgradedEvent() = Outgoing.FieldUpgraded(cell.x, cell.y, resource, level)
 fun CellImpl.ownedEvent() = Outgoing.Owned(x, y, owner)
 fun CellImpl.discoveredEvent() = Outgoing.Discovered(x, y, value)

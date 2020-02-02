@@ -49,8 +49,8 @@
         <tbody>
         <tr th:each="it: ${squads}">
             <td><a th:href="@{/players/{id}(id=${it.owner.id})}" th:text="${it.owner.id}"></a></td>
-            <td><span th:text="${it.origin.cell.x}"></span> <span th:text="${it.origin.cell.y}"></span></td>
-            <td><span th:text="${it.target.cell.x}"></span> <span th:text="${it.target.cell.y}"></span></td>
+            <td><a th:href="@{/cells/{x}/{y}(x=${it.origin.x},y=${it.origin.y})}" th:text="'[' + ${it.origin.x} + ',' + ${it.origin.y} + ']'"></a></td>
+            <td><a th:href="@{/cells/{x}/{y}(x=${it.target.x},y=${it.target.y})}" th:text="'[' + ${it.target.x} + ',' + ${it.target.y} + ']'"></a></td>
             <td th:text="${it.timeout}"></td>
             <td>
                 <th:block th:each="unit : ${it.units}">

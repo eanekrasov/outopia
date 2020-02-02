@@ -2,23 +2,19 @@ package ru.o4fun.models
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.Transient
+import ru.o4fun.Building
 import ru.o4fun.Resource
 import ru.o4fun.interfaces.Value
 
 @Serializable
 sealed class ValueImpl : Value {
-    @Transient
-    override lateinit var cell: CellImpl
-        protected set
-
     @Serializable
-    @SerialName("barracks")
-    class BarracksImpl(
+    @SerialName("building")
+    class BuildingImpl(
         override var cell: CellImpl,
-        override var level: Int = 1,
-        override val units: MutableMap<SquadUnit, Long> = mutableMapOf()
-    ) : ValueImpl(), Value.Barracks {
+        override var building: Building = Building.Barracks,
+        override var level: Int = 1
+    ) : ValueImpl(), Value.Building {
         val upgradeCost get() = mapOf(Resource.GOLD to level * 100L)
     }
 

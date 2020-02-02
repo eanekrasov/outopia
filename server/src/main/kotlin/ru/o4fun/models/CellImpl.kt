@@ -15,6 +15,7 @@ class CellImpl(
     // never set it by hand, use Player.owned instead
     override var owner: PlayerImpl? = null
 ) : Cell {
+    override val units: MutableMap<SquadUnit, Long> = mutableMapOf()
     @Transient
     override var type: CellType = if (Random.nextFloat() > 0.9) CellType.FOREST else CellType.DEFAULT
     @Transient
