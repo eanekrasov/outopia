@@ -5,15 +5,12 @@ import kotlinx.serialization.json.JsonConfiguration
 import kotlinx.serialization.stringify
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.socket.WebSocketHandler
-import org.springframework.web.reactive.socket.WebSocketMessage
 import org.springframework.web.reactive.socket.WebSocketSession
 import reactor.core.publisher.Flux
-import reactor.core.publisher.Mono
 import ru.o4fun.events.Incoming
 import ru.o4fun.events.Outgoing
 import ru.o4fun.exceptions.KindUnknownException
 import ru.o4fun.interfaces.PlayerSession
-import ru.o4fun.interfaces.SessionCallback
 import ru.o4fun.services.OutopiaService
 import java.util.*
 
@@ -23,18 +20,18 @@ class SocketHandler(
 ) : WebSocketHandler {
     val engine = outopiaService.engine
 
-    override fun handle(session: WebSocketSession): Mono<Void> {
-        val params = session.params()
-        return if (params.containsKey("id")) {
-            lateinit var callback: SessionCallback
-            val sender = Flux.create<WebSocketMessage> {
-                callback = engine.addSession(params.getValue("id"), object : PlayerSession {
-                    override fun sendMessage(msg: Outgoing) {
-                        it.next(session.textMessage(json.stringify(msg)))
-                    }
-                })
-            }
-            val receiver = { it: WebSocketMessage ->
+    override fun handle(session: WebSocketSession) = with(session.params()) {
+        if (containsKey("id")) SocketSession(session, getValue("id")).process() else session.close()
+    }
+
+    inner class SocketSession(
+        private val session: WebSocketSession,
+        id: String
+    ) : PlayerSession {
+        private val callback = engine.addSession(id, this)
+
+        fun process() = session.receive()
+            .doOnNext {
                 try {
                     callback.event(Json.parse(Incoming.serializer(), it.payloadAsText))
                 } catch (e: KindUnknownException) {
@@ -43,11 +40,16 @@ class SocketHandler(
                     e.printStackTrace()
                 }
             }
-            Mono.zip(
-                session.receive().doOnNext(receiver).doOnComplete { callback.remove() }.doOnError { callback.remove() }.then(),
-                session.send(sender)
-            ).then()
-        } else session.close()
+            .doOnComplete {
+                callback.remove()
+            }
+            .doOnError {
+                callback.remove()
+            }.then()
+
+        override fun sendMessage(msg: Outgoing) {
+            session.send(Flux.just(session.textMessage(json.stringify(msg))))
+        }
     }
 
     companion object {
