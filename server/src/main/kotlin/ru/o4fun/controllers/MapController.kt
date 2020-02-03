@@ -1,5 +1,6 @@
 package ru.o4fun.controllers
 
+import org.springframework.core.io.ClassPathResource
 import org.springframework.core.io.buffer.DataBuffer
 import org.springframework.core.io.buffer.DataBufferFactory
 import org.springframework.http.server.reactive.ServerHttpResponse
@@ -53,7 +54,7 @@ class MapController(
         @PathVariable("y") y: Int,
         response: ServerHttpResponse
     ) = writeToServerResponse(response.bufferFactory()) { out ->
-        out.cacheIt("$base/cache/map-$z-$x-$y.png") { ImageIO.write(mapTile(z, x, y), "png", it) }
+        out.cacheIt("cache/map-$z-$x-$y.png") { ImageIO.write(mapTile(z, x, y), "png", it) }
     }
 
 
@@ -67,7 +68,7 @@ class MapController(
         response: ServerHttpResponse
     ) = with(engine[id] ?: throw NotFoundException()) {
         writeToServerResponse(response.bufferFactory()) { out2 ->
-            out2.cacheIt("$base/cache/map-$z-$x-$y.png") { out -> ImageIO.write(mapTile(z, x, y) { discovered.contains(it) }, "png", out) }
+            out2.cacheIt("cache/map-$z-$x-$y.png") { out -> ImageIO.write(mapTile(z, x, y) { discovered.contains(it) }, "png", out) }
         }
     }
 
@@ -78,10 +79,10 @@ class MapController(
         check: (Cell) -> Boolean = { true }
     ): BufferedImage {
         if (z !in 1..6) throw NotFoundException()
-        val t = 2.times(z)
+        val t = 1 shl z
         val tiles = 256 / t
-        val orig = File("$base/earth-moon-$t.png").inputStream().use { ImageIO.read(it) }
-        val forestOrig = File("$base/earth-forest-$t.png").inputStream().use { ImageIO.read(it) }
+        val orig = ClassPathResource("map/earth-moon-$t.png").inputStream.use { ImageIO.read(it) }
+        val forestOrig = ClassPathResource("map/earth-forest-$t.png").inputStream.use { ImageIO.read(it) }
         val forest = (0..4).map { forestOrig.getSubimage(t * it, 0, t, t) }
         val green = (1..3).map { orig.getSubimage(t * it, 0, t, t) }
         val yellow = (4..6).map { orig.getSubimage(t * it, 0, t, t) }
@@ -123,10 +124,10 @@ class MapController(
     }, FluxSink.OverflowStrategy.BUFFER)
 
     companion object {
-        const val base = "/Users/coder/IdeaProjects/outopia/server/src/main/resources/map"
+        private const val cacheMap = false
 
-        fun OutputStream.cacheIt(path: String, save: Boolean = false, draw: (out: OutputStream) -> Unit) {
-            if (save) {
+        fun OutputStream.cacheIt(path: String, draw: (out: OutputStream) -> Unit) {
+            if (cacheMap) {
                 val file = File(path)
                 if (!file.exists()) file.outputStream().use(draw)
                 file.inputStream().use { it.copyTo(this) }
