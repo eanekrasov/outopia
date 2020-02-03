@@ -4,16 +4,20 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
-import ru.o4fun.*
+import ru.o4fun.Building
+import ru.o4fun.Resource
 import ru.o4fun.annotations.DslScope
-import ru.o4fun.events.Incoming
+import ru.o4fun.extensions.*
 import ru.o4fun.interfaces.*
+import ru.o4fun.properties.AppProperties
 import java.util.*
 import kotlin.math.abs
 import kotlin.math.roundToInt
 import kotlin.system.measureTimeMillis
 
-class Engine {
+class World(
+    val props: AppProperties.World
+) {
 
     // region public
 
@@ -21,7 +25,7 @@ class Engine {
 
     val allSquads: Set<Squad> get() = squads
 
-    operator fun get(x: Int, y: Int): Cell = if (x in (0 until width) && y in (0 until height)) cells[x][y] else throw Exception()
+    operator fun get(x: Int, y: Int): Cell = if (x in (0 until props.width) && y in (0 until props.height)) cells[x][y] else throw Exception()
 
     operator fun get(id: String): Player? = players[id]
 
@@ -56,7 +60,7 @@ class Engine {
             Task(1) { updateResources();updateSquads();false }
         )
         while (true) {
-            if (tickDelay - time > 0) delay(tickDelay - time)
+            if (props.tickDelay - time > 0) delay(props.tickDelay - time)
             countExec = 0
             count = 0
             time = measureTimeMillis {
@@ -80,6 +84,20 @@ class Engine {
 
     // endregion
 
+    val private = Private()
+
+    @Suppress("unused")
+    inner class Private {
+        val allPlayers: Collection<PlayerImpl> get() = players.values
+
+        val allSquads: Set<SquadImpl> get() = squads
+
+        operator fun get(x: Int, y: Int): CellImpl = if (x in (0 until props.width) && y in (0 until props.height)) cells[x][y] else throw Exception()
+
+        operator fun get(id: String): PlayerImpl? = players[id]
+
+    }
+
     private val cells: Array<Array<CellImpl>> = mapXY { (x, y) -> CellImpl(x, y) }
     private val players = mutableMapOf<String, PlayerImpl>()
     private val squads = mutableSetOf<SquadImpl>()
@@ -88,7 +106,7 @@ class Engine {
         players.values.map {
             async {
                 it.updateResources()
-                it.send(it.resourcesEvent(), false)
+                it.send(it.resourcesEvent(), 0)
             }
         }.awaitAll()
     }
@@ -104,7 +122,7 @@ class Engine {
                     list.filter { cell.owner == it.owner }.forEach { cell.addUnits(it.units) }
                     val attackers = list.filter { cell.owner != it.owner }
                     attackers.forEach { squad ->
-                        if (verbose) println("${squad.units} attacks ${cell.units} ${cell.x} ${cell.y}")
+                        if (props.verbose) println("${squad.units} attacks ${cell.units} ${cell.x} ${cell.y}")
                         val attacker = squad.units.toMutableMap()
                         attacker.strike(cell.units)
                         if (cell.units.hasUnits()) {
@@ -112,13 +130,13 @@ class Engine {
                             if (attacker.hasUnits()) {
                                 squads.add(SquadImpl(squad.owner, cell, squad.origin, attacker))
                             } else {
-                                squad.owner.send(squad.destroyedEvent(), true)
+                                squad.owner.send(squad.destroyedEvent(), props.parentsLevel)
                             }
                         } else {
                             cell.owner?.owned?.remove(cell)
                             squad.owner.owned.add(cell)
                             cell.addUnits(attacker)
-                            cell.sendAll(cell.ownedEvent(), true)
+                            cell.sendAll(cell.ownedEvent(), props.parentsLevel)
                         }
                     }
                 }
@@ -132,31 +150,31 @@ class Engine {
             is Incoming.SquadSend -> if (cell.owner == this) cell.tryTakeUnits(e.units) {
                 val target = cells[e.tx][e.ty]
                 val squad = SquadImpl(this, cell, target, e.units)
-                if (verbose) println("$id sending ${squad.units} from ${e.x} ${e.y} to ${e.tx} ${e.ty} (${squad.timeout})")
+                if (props.verbose) println("$id sending ${squad.units} from ${e.x} ${e.y} to ${e.tx} ${e.ty} (${squad.timeout})")
                 squads.add(squad)
-                cell.sendAll(squad.sentEvent(), true)
+                cell.sendAll(squad.sentEvent(), props.parentsLevel)
             }
             is Incoming.UnitBuy -> if (cell.owner == this) {
                 if (tryTakeResources(e.units.cost) { cell.addUnits(e.units) }) {
-                    cell.sendAll(e.boughtEvent(), true)
+                    cell.sendAll(e.boughtEvent(), props.parentsLevel)
                 }
             }
             is Incoming.Discover -> {
                 discovered.add(cell)
-                send(cell.discoveredEvent(), true)
+                send(cell.discoveredEvent(), props.parentsLevel)
             }
             is Incoming.Own -> if (cell.owner == null) {
                 owned.add(cell)
-                cell.sendAll(cell.ownedEvent(), true)
+                cell.sendAll(cell.ownedEvent(), props.parentsLevel)
             }
             is Incoming.BuildingUpgrade -> if (cell.owner == this) cell.buildingIn(e.building) {
                 if (tryTakeResources(it.upgradeCost) { it.level++ }) {
-                    cell.sendAll(it.upgradedEvent(), true)
+                    cell.sendAll(it.upgradedEvent(), props.parentsLevel)
                 }
             }
             is Incoming.FieldUpgrade -> if (cell.owner == this) cell.fieldIn(e.resource) {
                 if (tryTakeResources(it.upgradeCost) { it.level++ }) {
-                    cell.sendAll(it.upgradedEvent(), true)
+                    cell.sendAll(it.upgradedEvent(), props.parentsLevel)
                 }
             }
         }
@@ -171,7 +189,7 @@ class Engine {
     inner class WorldScope {
         private val r = Random()
 
-        fun placeAt(x: Int = randomGaussian(width), y: Int = randomGaussian(height), block: CellScope.() -> Unit) =
+        fun placeAt(x: Int = randomGaussian(props.width), y: Int = randomGaussian(props.height), block: CellScope.() -> Unit) =
             CellScope(cells[x][y]).apply(block)
 
         private fun randomGaussian(max: Int): Int {
@@ -202,11 +220,4 @@ class Engine {
 
     // endregion
 
-    companion object {
-        const val verbose = false
-        const val parentsLevel = 2
-        const val tickDelay = 1000L
-        const val width = 512 // TODO: 100
-        const val height = 512 // TODO: 100
-    }
 }

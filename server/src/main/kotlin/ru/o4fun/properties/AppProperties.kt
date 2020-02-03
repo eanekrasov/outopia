@@ -4,9 +4,23 @@ import org.springframework.boot.context.properties.ConfigurationProperties
 
 @ConfigurationProperties(prefix = "app", ignoreUnknownFields = true)
 class AppProperties {
-    val paths = Paths()
+    val bots = Bots()
+    val world = World()
+    val map = Map()
 
-    class Paths {
-        var images: String = "/images"
+    class World {
+        var verbose = false
+        var parentsLevel = 2
+        var tickDelay = 1000L
+        var width = 512
+        var height = 512
+    }
+
+    class Bots {
+        var verbose = false
+    }
+
+    class Map {
+        var cache = false
     }
 }

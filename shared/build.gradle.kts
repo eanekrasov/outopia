@@ -1,18 +1,25 @@
+val kotlinCoroutinesVersion: String by project
+val kotlinSerializationVersion: String by project
+
 plugins {
     kotlin("multiplatform")
+    kotlin("plugin.serialization")
 }
 
 kotlin {
     jvm()
     js {
         browser()
-        nodejs()
     }
 
     sourceSets {
+        fun kotlinx(module: String, version: String) = "org.jetbrains.kotlinx:kotlinx-$module:$version"
+
         commonMain {
             dependencies {
                 implementation(kotlin("stdlib-common"))
+                implementation(kotlinx("coroutines-core-common", kotlinCoroutinesVersion))
+                implementation(kotlinx("serialization-runtime-common", kotlinSerializationVersion))
             }
         }
         commonTest {
@@ -21,23 +28,27 @@ kotlin {
                 implementation(kotlin("test-annotations-common"))
             }
         }
-        getByName("jvmMain").apply {
+        val jvmMain by getting {
             dependencies {
                 implementation(kotlin("stdlib-jdk8"))
+                implementation(kotlinx("coroutines-core", kotlinCoroutinesVersion))
+                implementation(kotlinx("serialization-runtime", kotlinSerializationVersion))
             }
         }
-        getByName("jvmTest").apply {
+        val jvmTest by getting {
             dependencies {
                 implementation(kotlin("test"))
                 implementation(kotlin("test-junit"))
             }
         }
-        getByName("jsMain").apply {
+        val jsMain by getting {
             dependencies {
                 implementation(kotlin("stdlib-js"))
+                implementation(kotlinx("coroutines-core-js", kotlinCoroutinesVersion))
+                implementation(kotlinx("serialization-runtime-js", kotlinSerializationVersion))
             }
         }
-        getByName("jsTest").apply {
+        val jsTest by getting {
             dependencies {
                 implementation(kotlin("test-js"))
             }

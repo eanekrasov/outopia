@@ -15,7 +15,7 @@ import reactor.core.publisher.FluxSink
 import ru.o4fun.exceptions.NotFoundException
 import ru.o4fun.interfaces.Cell
 import ru.o4fun.interfaces.CellType
-import ru.o4fun.models.Engine
+import ru.o4fun.properties.AppProperties
 import ru.o4fun.services.OutopiaService
 import java.awt.image.BufferedImage
 import java.io.File
@@ -25,15 +25,17 @@ import kotlin.math.abs
 
 @Controller
 class MapController(
-    outopiaService: OutopiaService
+    outopiaService: OutopiaService,
+    props: AppProperties
 ) {
-    private val engine = outopiaService.engine
+    private val props = props.map
+    private val world = outopiaService.world
 
     @GetMapping("/map")
     fun map(model: Model) = Rendering.view("map")
-        .modelAttribute("world", engine)
-        .modelAttribute("width", Engine.width)
-        .modelAttribute("height", Engine.height)
+        .modelAttribute("world", world)
+        .modelAttribute("width", world.props.width)
+        .modelAttribute("height", world.props.height)
         .build()
 
     @GetMapping("/players/{id}/map")
@@ -41,9 +43,9 @@ class MapController(
         @PathVariable("id") id: String,
         model: Model
     ) = Rendering.view("playerMap")
-        .modelAttribute("player", engine[id] ?: throw NotFoundException())
-        .modelAttribute("width", Engine.width)
-        .modelAttribute("height", Engine.height)
+        .modelAttribute("player", world[id] ?: throw NotFoundException())
+        .modelAttribute("width", world.props.width)
+        .modelAttribute("height", world.props.height)
         .build()
 
     @GetMapping("/map/{z}/{x}/{y}", produces = ["image/png"])
@@ -54,7 +56,7 @@ class MapController(
         @PathVariable("y") y: Int,
         response: ServerHttpResponse
     ) = writeToServerResponse(response.bufferFactory()) { out ->
-        out.cacheIt("cache/map-$z-$x-$y.png") { ImageIO.write(mapTile(z, x, y), "png", it) }
+        out.cacheIt("cache/map-$z-$x-$y.png", props.cache) { ImageIO.write(mapTile(z, x, y), "png", it) }
     }
 
 
@@ -66,9 +68,9 @@ class MapController(
         @PathVariable("x") x: Int,
         @PathVariable("y") y: Int,
         response: ServerHttpResponse
-    ) = with(engine[id] ?: throw NotFoundException()) {
+    ) = with(world[id] ?: throw NotFoundException()) {
         writeToServerResponse(response.bufferFactory()) { out2 ->
-            out2.cacheIt("cache/map-$z-$x-$y.png") { out -> ImageIO.write(mapTile(z, x, y) { discovered.contains(it) }, "png", out) }
+            out2.cacheIt("cache/map-$z-$x-$y.png", props.cache) { out -> ImageIO.write(mapTile(z, x, y) { discovered.contains(it) }, "png", out) }
         }
     }
 
@@ -93,8 +95,8 @@ class MapController(
                     (0 until tiles).forEach { dx ->
                         val xx = x * tiles + dx
                         val yy = y * tiles + dy
-                        if (xx in (0 until Engine.width) && yy in (0 until Engine.height)) {
-                            val cell = engine[xx, yy]
+                        if (xx in (0 until world.props.width) && yy in (0 until world.props.height)) {
+                            val cell = world[xx, yy]
                             if (check(cell)) {
                                 drawImage(
                                     when {
@@ -123,18 +125,16 @@ class MapController(
         emitter.complete()
     }, FluxSink.OverflowStrategy.BUFFER)
 
-    companion object {
-        private const val cacheMap = false
+    fun List<BufferedImage>.deepCell(x: Int, y: Int) =
+        if (abs(-x + y - 1) < (world.props.height + world.props.width) / 6) this[0] else if (abs(-x + y - 1) < (world.props.height + world.props.width) / 3) this[1] else this[2]
 
-        fun OutputStream.cacheIt(path: String, draw: (out: OutputStream) -> Unit) {
-            if (cacheMap) {
+    companion object {
+        fun OutputStream.cacheIt(path: String, save: Boolean, draw: (out: OutputStream) -> Unit) {
+            if (save) {
                 val file = File(path)
                 if (!file.exists()) file.outputStream().use(draw)
                 file.inputStream().use { it.copyTo(this) }
             } else draw(this)
         }
-
-        fun List<BufferedImage>.deepCell(x: Int, y: Int) =
-            if (abs(-x + y - 1) < (Engine.height + Engine.width) / 6) this[0] else if (abs(-x + y - 1) < (Engine.height + Engine.width) / 3) this[1] else this[2]
     }
 }

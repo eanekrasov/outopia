@@ -7,36 +7,35 @@ import org.springframework.web.reactive.result.view.Rendering
 import org.thymeleaf.spring5.context.webflux.ReactiveDataDriverContextVariable
 import reactor.core.publisher.Flux
 import ru.o4fun.exceptions.NotFoundException
-import ru.o4fun.models.Engine
 import ru.o4fun.services.OutopiaService
 
 @Controller
 class DefaultController(
     outopiaService: OutopiaService
 ) {
-    private val engine = outopiaService.engine
+    private val world = outopiaService.world
     @GetMapping("/")
     fun table() = Rendering.view("table")
-        .modelAttribute("height", Engine.height)
-        .modelAttribute("width", Engine.width)
-        .modelAttribute("world", engine)
+        .modelAttribute("height", world.props.height)
+        .modelAttribute("width", world.props.width)
+        .modelAttribute("world", world)
         .build()
 
     @GetMapping("/players")
     fun players() = Rendering.view("players")
-        .modelAttribute("players", ReactiveDataDriverContextVariable(Flux.fromIterable(engine.allPlayers), 1))
+        .modelAttribute("players", ReactiveDataDriverContextVariable(Flux.fromIterable(world.allPlayers), 1))
         .build()
 
     @GetMapping("/squads")
     fun squads() = Rendering.view("squads")
-        .modelAttribute("squads", ReactiveDataDriverContextVariable(Flux.fromIterable(engine.allSquads), 1))
+        .modelAttribute("squads", ReactiveDataDriverContextVariable(Flux.fromIterable(world.allSquads), 1))
         .build()
 
     @GetMapping("/players/{id}")
     fun player(
         @PathVariable("id") id: String
     ) = Rendering.view("player")
-        .modelAttribute("player", engine[id] ?: throw NotFoundException())
+        .modelAttribute("player", world[id] ?: throw NotFoundException())
         .build()
 
     @GetMapping("/cells/{x}/{y}")
@@ -44,6 +43,6 @@ class DefaultController(
         @PathVariable("x") x: Int,
         @PathVariable("y") y: Int
     ) = Rendering.view("cell")
-        .modelAttribute("cell", engine[x, y])
+        .modelAttribute("cell", world[x, y])
         .build()
 }

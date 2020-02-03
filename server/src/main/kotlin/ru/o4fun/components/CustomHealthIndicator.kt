@@ -1,4 +1,4 @@
-package ru.o4fun
+package ru.o4fun.components
 
 import org.springframework.boot.actuate.health.Health
 

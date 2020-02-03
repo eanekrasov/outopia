@@ -1,12 +1,11 @@
-package ru.o4fun.events
+package ru.o4fun.models
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import ru.o4fun.Building
 import ru.o4fun.Resource
-import ru.o4fun.models.PlayerImpl
-import ru.o4fun.models.SquadUnit
-import ru.o4fun.models.ValueImpl
+import ru.o4fun.interfaces.Player
+import ru.o4fun.interfaces.Value
 
 @Serializable
 sealed class Outgoing {
@@ -43,7 +42,7 @@ sealed class Outgoing {
     class Discovered(
         val x: Int = 0,
         val y: Int = 0,
-        val value: Set<ValueImpl>
+        val value: Set<Value>
     ) : Outgoing()
 
     @Serializable
@@ -51,7 +50,7 @@ sealed class Outgoing {
     class Owned(
         val x: Int = 0,
         val y: Int = 0,
-        val owner: PlayerImpl?
+        val owner: Player?
     ) : Outgoing()
 
     @Serializable

@@ -1,7 +1,9 @@
 import kotlin.browser.window
 
 fun main() {
+    println("main")
     window.onload = {
+        println("onload")
         //        EventSource("/api/users").onmessage = {
 //            val user = JSON.parse<User>(it.data as String)
 //            val li = document.createElement("li").apply {

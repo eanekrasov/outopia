@@ -7,17 +7,19 @@ import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Service
 import ru.o4fun.events.SchedulerReady
-import ru.o4fun.models.Engine
+import ru.o4fun.models.World
+import ru.o4fun.properties.AppProperties
 
 @Service
 class OutopiaService(
-    private val eventPublisher: ApplicationEventPublisher
+    private val eventPublisher: ApplicationEventPublisher,
+    props: AppProperties
 ) {
-    val engine = Engine()
+    val world = World(props.world)
 
     @EventListener(ApplicationReadyEvent::class)
     fun onApplicationReady() = GlobalScope.launch {
-        engine.startScheduler(true) {
+        world.startScheduler(true) {
             eventPublisher.publishEvent(SchedulerReady(it))
         }
     }

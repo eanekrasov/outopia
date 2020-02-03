@@ -2,8 +2,8 @@ package ru.o4fun.models
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
-import ru.o4fun.BoundSet
-import ru.o4fun.ObservableSet
+import ru.o4fun.collections.BoundSet
+import ru.o4fun.collections.ObservableSet
 import ru.o4fun.interfaces.Cell
 import ru.o4fun.interfaces.CellType
 import kotlin.random.Random

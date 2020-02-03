@@ -1,4 +1,4 @@
-package ru.o4fun
+package ru.o4fun.collections
 
 abstract class ObservableSet<T>(private val parent: MutableSet<T> = mutableSetOf()) : MutableSet<T> by parent {
     protected open fun beforeAdd(element: T) {}

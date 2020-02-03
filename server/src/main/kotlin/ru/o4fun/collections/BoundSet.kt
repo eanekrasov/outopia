@@ -1,4 +1,4 @@
-package ru.o4fun
+package ru.o4fun.collections
 
 open class BoundSet<T, P>(
     private val parent: MutableSet<T> = mutableSetOf(),

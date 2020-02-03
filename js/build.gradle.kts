@@ -1,18 +1,24 @@
+val kotlinCoroutinesVersion: String by project
+val kotlinSerializationVersion: String by project
+
 plugins {
     kotlin("js")
+    kotlin("plugin.serialization")
 }
 
-kotlin {
-    target {
-        browser()
+kotlin.target.browser {}
 
-        sourceSets {
-            main {
-                dependencies {
-                    implementation(kotlin("stdlib-js"))
-                    implementation(project(":shared"))
-                }
-            }
-        }
-    }
+dependencies {
+    fun kotlinx(module: String, version: String) = "org.jetbrains.kotlinx:kotlinx-$module:$version"
+
+    implementation(project(":shared"))
+
+    // region kotlin
+
+    implementation(kotlin("stdlib-js"))
+    implementation(kotlinx("coroutines-core", kotlinCoroutinesVersion))
+    implementation(kotlinx("serialization-runtime-js", kotlinSerializationVersion))
+
+    // endregion
+
 }

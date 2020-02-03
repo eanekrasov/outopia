@@ -1,24 +1,23 @@
-package ru.o4fun
+package ru.o4fun.components
 
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonConfiguration
-import kotlinx.serialization.stringify
-import org.springframework.stereotype.Service
+import org.springframework.stereotype.Component
 import org.springframework.web.reactive.socket.WebSocketHandler
 import org.springframework.web.reactive.socket.WebSocketSession
 import reactor.core.publisher.Flux
-import ru.o4fun.events.Incoming
-import ru.o4fun.events.Outgoing
 import ru.o4fun.exceptions.KindUnknownException
 import ru.o4fun.interfaces.PlayerSession
+import ru.o4fun.models.Incoming
+import ru.o4fun.models.Outgoing
 import ru.o4fun.services.OutopiaService
 import java.util.*
 
-@Service
+@Component
 class SocketHandler(
     outopiaService: OutopiaService
 ) : WebSocketHandler {
-    val engine = outopiaService.engine
+    val world = outopiaService.world
 
     override fun handle(session: WebSocketSession) = with(session.params()) {
         if (containsKey("id")) SocketSession(session, getValue("id")).process() else session.close()
@@ -28,7 +27,7 @@ class SocketHandler(
         private val session: WebSocketSession,
         id: String
     ) : PlayerSession {
-        private val callback = engine.addSession(id, this)
+        private val callback = world.addSession(id, this)
 
         fun process() = session.receive()
             .doOnNext {
@@ -48,7 +47,7 @@ class SocketHandler(
             }.then()
 
         override fun sendMessage(msg: Outgoing) {
-            session.send(Flux.just(session.textMessage(json.stringify(msg))))
+            session.send(Flux.just(session.textMessage(json.stringify(Outgoing.serializer(), msg))))
         }
     }
 

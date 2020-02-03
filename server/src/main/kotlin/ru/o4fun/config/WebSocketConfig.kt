@@ -6,7 +6,7 @@ import org.springframework.core.Ordered
 import org.springframework.web.reactive.HandlerMapping
 import org.springframework.web.reactive.handler.SimpleUrlHandlerMapping
 import org.springframework.web.reactive.socket.server.support.WebSocketHandlerAdapter
-import ru.o4fun.SocketHandler
+import ru.o4fun.components.SocketHandler
 
 @Configuration
 class WebSocketConfig(

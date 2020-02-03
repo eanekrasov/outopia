@@ -2,23 +2,26 @@ package ru.o4fun.services
 
 import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Service
-import ru.o4fun.*
-import ru.o4fun.events.Incoming
-import ru.o4fun.events.Outgoing
+import ru.o4fun.Building
+import ru.o4fun.Resource
 import ru.o4fun.events.SchedulerReady
+import ru.o4fun.extensions.cost
+import ru.o4fun.extensions.hasResources
+import ru.o4fun.extensions.hasUnits
 import ru.o4fun.interfaces.Cell
 import ru.o4fun.interfaces.Player
 import ru.o4fun.interfaces.PlayerSession
-import ru.o4fun.models.Engine
-import ru.o4fun.models.SquadUnit
-import ru.o4fun.models.ValueImpl
+import ru.o4fun.models.*
+import ru.o4fun.properties.AppProperties
 import kotlin.random.Random
 
 @Service
 class BotsService(
-    outopiaService: OutopiaService
+    outopiaService: OutopiaService,
+    props: AppProperties
 ) {
-    private final val engine = outopiaService.engine
+    private val props = props.bots
+    private final val world = outopiaService.world
 
     @EventListener
     fun onSchedulerReady(e: SchedulerReady) {
@@ -27,7 +30,7 @@ class BotsService(
 //         val bots = listOf(red, blue)
         val bots = (1..1000).map { i -> Bot("bot-$i") }
 
-        engine.edit {
+        world.edit {
             bots.forEach { placeAt { initCell(it) } }
 //            placeAt(2, 2) { initCell(red) }
 //            placeAt(7, 7) { initCell(blue) }
@@ -46,7 +49,7 @@ class BotsService(
         }
     }
 
-    fun Engine.CellScope.initCell(bot: Bot) {
+    fun World.CellScope.initCell(bot: Bot) {
         bot.discover(cell)
         bot.own(cell)
         Building.values().forEach {
@@ -58,7 +61,7 @@ class BotsService(
     }
 
     inner class Bot(id: String) {
-        val session = engine.addSession(id, BotSession())
+        val session = world.addSession(id, BotSession())
         private val foes = mutableMapOf<Pair<Int, Int>, Player>()
 
         fun tick() {
@@ -82,15 +85,15 @@ class BotsService(
         }
 
         private fun onDiscoveredEvent(msg: Outgoing.Discovered) {
-            val cell = engine[msg.x, msg.y]
+            val cell = world[msg.x, msg.y]
             if (cell.owner != null && cell.owner != session.player) {
-                if (verbose) println("${session.player.id} found ${cell.owner?.id} at ${msg.x} ${msg.y}")
+                if (props.verbose) println("${session.player.id} found ${cell.owner?.id} at ${msg.x} ${msg.y}")
                 foes[cell.x to cell.y] = cell.owner!!
             }
         }
 
         private fun onOwnedEvent(msg: Outgoing.Owned) {
-            if (verbose) println("${msg.owner?.id} owned ${msg.x} ${msg.y}")
+            if (props.verbose) println("${msg.owner?.id} owned ${msg.x} ${msg.y}")
             foes[msg.x to msg.y] = msg.owner!!
         }
 
@@ -115,8 +118,6 @@ class BotsService(
     }
 
     companion object {
-        const val verbose = false
-
         fun spiral() = sequence {
             var v = -1
             var row = 0
