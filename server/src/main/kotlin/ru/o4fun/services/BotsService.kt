@@ -83,14 +83,14 @@ class BotsService(
 
         private fun onDiscoveredEvent(msg: Outgoing.Discovered) {
             val cell = engine[msg.x, msg.y]
-            if (cell.owner != session.player) {
-                println("${session.player.id} found ${cell.owner?.id} at ${msg.x} ${msg.y}")
+            if (cell.owner != null && cell.owner != session.player) {
+                if (verbose) println("${session.player.id} found ${cell.owner?.id} at ${msg.x} ${msg.y}")
                 foes[cell.x to cell.y] = cell.owner!!
             }
         }
 
         private fun onOwnedEvent(msg: Outgoing.Owned) {
-            println("${msg.owner?.id} owned ${msg.x} ${msg.y}")
+            if (verbose) println("${msg.owner?.id} owned ${msg.x} ${msg.y}")
             foes[msg.x to msg.y] = msg.owner!!
         }
 
@@ -115,6 +115,8 @@ class BotsService(
     }
 
     companion object {
+        const val verbose = false
+
         fun spiral() = sequence {
             var v = -1
             var row = 0

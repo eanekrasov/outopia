@@ -104,7 +104,7 @@ class Engine {
                     list.filter { cell.owner == it.owner }.forEach { cell.addUnits(it.units) }
                     val attackers = list.filter { cell.owner != it.owner }
                     attackers.forEach { squad ->
-                        println("${squad.units} attacks ${cell.units} ${cell.x} ${cell.y}")
+                        if (verbose) println("${squad.units} attacks ${cell.units} ${cell.x} ${cell.y}")
                         val attacker = squad.units.toMutableMap()
                         attacker.strike(cell.units)
                         if (cell.units.hasUnits()) {
@@ -132,7 +132,7 @@ class Engine {
             is Incoming.SquadSend -> if (cell.owner == this) cell.tryTakeUnits(e.units) {
                 val target = cells[e.tx][e.ty]
                 val squad = SquadImpl(this, cell, target, e.units)
-                println("$id sending ${squad.units} from ${e.x} ${e.y} to ${e.tx} ${e.ty} (${squad.timeout})")
+                if (verbose) println("$id sending ${squad.units} from ${e.x} ${e.y} to ${e.tx} ${e.ty} (${squad.timeout})")
                 squads.add(squad)
                 cell.sendAll(squad.sentEvent(), true)
             }
@@ -203,6 +203,7 @@ class Engine {
     // endregion
 
     companion object {
+        const val verbose = false
         const val parentsLevel = 2
         const val tickDelay = 1000L
         const val width = 512 // TODO: 100
