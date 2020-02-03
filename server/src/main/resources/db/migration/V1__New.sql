@@ -1,0 +1,4 @@
+CREATE TABLE cells (
+    id SERIAL PRIMARY KEY,
+    payload VARCHAR(255) NOT NULL
+);

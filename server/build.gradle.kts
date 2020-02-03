@@ -37,6 +37,12 @@ tasks {
     }
 }
 
+dependencyManagement {
+    imports {
+        mavenBom("org.springframework.boot.experimental:spring-boot-bom-r2dbc:0.1.0.BUILD-SNAPSHOT")
+    }
+}
+
 dependencies {
     implementation(project(":shared"))
 
@@ -56,14 +62,22 @@ dependencies {
 
     // region Spring Boot
 
-    fun starter(module: String, version: String = springBootVersion): Any = "org.springframework.boot:spring-boot-starter-$module:$version"
+    fun boot(module: String, version: String = springBootVersion) = "org.springframework.boot:spring-boot-$module:$version"
+    fun starter(module: String, version: String = springBootVersion) = "org.springframework.boot:spring-boot-starter-$module:$version"
 
-    implementation(starter("data-jpa"))
+    implementation("org.springframework.boot.experimental:spring-boot-starter-data-r2dbc")
+    runtimeOnly("io.r2dbc:r2dbc-h2")
+    runtimeOnly("com.h2database:h2")
+    implementation("org.flywaydb:flyway-core:6.2.1")
     implementation(starter("thymeleaf"))
     implementation(starter("webflux"))
 //    implementation(starter("security"))
-    implementation(starter("test"))
-    runtime("org.springframework.boot:spring-boot-devtools:$springBootVersion")
+    testImplementation(starter("test")) {
+        exclude(group = "org.junit.vintage", module = "junit-vintage-engine")
+    }
+    testImplementation("org.springframework.boot.experimental:spring-boot-test-autoconfigure-r2dbc")
+    testImplementation("io.projectreactor:reactor-test")
+    runtimeOnly(boot("devtools"))
 
     // endregion
 
@@ -87,7 +101,7 @@ dependencies {
     // endregion
 
 //    #https://habr.com/ru/post/479954/
-    implementation("org.springframework.boot:spring-boot-starter-actuator")
+    implementation(starter("actuator"))
 //    implementation("de.codecentric:spring-boot-admin-starter-server")
 //    implementation("de.codecentric:spring-boot-admin-starter-client")
 
