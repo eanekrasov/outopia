@@ -1,17 +1,23 @@
 package ru.o4fun.config
 
+import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.web.socket.config.annotation.EnableWebSocket
-import org.springframework.web.socket.config.annotation.WebSocketConfigurer
-import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry
-import ru.o4fun.WebSocketHandler
+import org.springframework.core.Ordered
+import org.springframework.web.reactive.HandlerMapping
+import org.springframework.web.reactive.handler.SimpleUrlHandlerMapping
+import org.springframework.web.reactive.socket.server.support.WebSocketHandlerAdapter
+import ru.o4fun.SocketHandler
 
 @Configuration
-@EnableWebSocket
 class WebSocketConfig(
-    private val handler: WebSocketHandler
-) : WebSocketConfigurer {
-    override fun registerWebSocketHandlers(registry: WebSocketHandlerRegistry) {
-        registry.addHandler(handler, "/ws/client").setAllowedOrigins("*")
+    private val socketHandler: SocketHandler
+) {
+    @Bean
+    fun handlerMapping(): HandlerMapping = SimpleUrlHandlerMapping().apply {
+        urlMap = mapOf("/ws/client" to socketHandler)
+        order = Ordered.HIGHEST_PRECEDENCE
     }
+
+    @Bean
+    fun webSocketHandlerAdapter() = WebSocketHandlerAdapter()
 }

@@ -1,10 +1,16 @@
 package ru.o4fun.controllers
 
-import org.apache.tomcat.util.http.fileupload.IOUtils
+import org.springframework.core.io.buffer.DataBuffer
+import org.springframework.core.io.buffer.DataBufferFactory
+import org.springframework.http.server.reactive.ServerHttpResponse
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.ResponseBody
+import org.springframework.web.reactive.result.view.Rendering
+import reactor.core.publisher.Flux
+import reactor.core.publisher.FluxSink
 import ru.o4fun.exceptions.NotFoundException
 import ru.o4fun.interfaces.Cell
 import ru.o4fun.interfaces.CellType
@@ -14,7 +20,6 @@ import java.awt.image.BufferedImage
 import java.io.File
 import java.io.OutputStream
 import javax.imageio.ImageIO
-import javax.servlet.http.HttpServletResponse
 import kotlin.math.abs
 
 @Controller
@@ -24,45 +29,46 @@ class MapController(
     private val engine = outopiaService.engine
 
     @GetMapping("/map")
-    fun map(model: Model): String {
-        model.addAttribute("world", engine)
-        model.addAttribute("width", Engine.width)
-        model.addAttribute("height", Engine.height)
-        return "map"
-    }
+    fun map(model: Model) = Rendering.view("map")
+        .modelAttribute("world", engine)
+        .modelAttribute("width", Engine.width)
+        .modelAttribute("height", Engine.height)
+        .build()
 
     @GetMapping("/players/{id}/map")
     fun playerMap(
         @PathVariable("id") id: String,
         model: Model
-    ): String {
-        val player = engine[id] ?: throw NotFoundException()
-        model.addAttribute("player", player)
-        model.addAttribute("width", Engine.width)
-        model.addAttribute("height", Engine.height)
-        return "playerMap"
-    }
+    ) = Rendering.view("playerMap")
+        .modelAttribute("player", engine[id] ?: throw NotFoundException())
+        .modelAttribute("width", Engine.width)
+        .modelAttribute("height", Engine.height)
+        .build()
 
-    @GetMapping("/map/{z}/{x}/{y}")
+    @GetMapping("/map/{z}/{x}/{y}", produces = ["image/png"])
+    @ResponseBody
     fun tile(
         @PathVariable("z") z: Int,
         @PathVariable("x") x: Int,
         @PathVariable("y") y: Int,
-        response: HttpServletResponse
-    ) {
-        response.outputStream.cacheIt("$base/cache/map-$z-$x-$y.png") { ImageIO.write(mapTile(z, x, y), "png", it) }
+        response: ServerHttpResponse
+    ) = writeToServerResponse(response.bufferFactory()) { out ->
+        out.cacheIt("$base/cache/map-$z-$x-$y.png") { ImageIO.write(mapTile(z, x, y), "png", it) }
     }
 
-    @GetMapping("/players/{id}/map/{z}/{x}/{y}")
+
+    @GetMapping("/players/{id}/map/{z}/{x}/{y}", produces = ["image/png"])
+    @ResponseBody
     fun playerTile(
         @PathVariable("id") id: String,
         @PathVariable("z") z: Int,
         @PathVariable("x") x: Int,
         @PathVariable("y") y: Int,
-        response: HttpServletResponse
-    ) {
-        val player = engine[id] ?: throw NotFoundException()
-        ImageIO.write(mapTile(z, x, y) { player.discovered.contains(it) }, "png", response.outputStream)
+        response: ServerHttpResponse
+    ) = with(engine[id] ?: throw NotFoundException()) {
+        writeToServerResponse(response.bufferFactory()) { out2 ->
+            out2.cacheIt("$base/cache/map-$z-$x-$y.png") { out -> ImageIO.write(mapTile(z, x, y) { discovered.contains(it) }, "png", out) }
+        }
     }
 
     private fun mapTile(
@@ -105,6 +111,17 @@ class MapController(
         }
     }
 
+    private fun writeToServerResponse(bufferFactory: DataBufferFactory, write: (OutputStream) -> Unit) = Flux.create<DataBuffer>({ emitter ->
+        emitter.next(bufferFactory.allocateBuffer().apply {
+            asOutputStream().use { out ->
+                write(out)
+                // don't know if flushing is strictly necessary
+                out.flush()
+            }
+        })
+        emitter.complete()
+    }, FluxSink.OverflowStrategy.BUFFER)
+
     companion object {
         const val base = "/Users/coder/IdeaProjects/outopia/server/src/main/resources/map"
 
@@ -112,7 +129,7 @@ class MapController(
             if (save) {
                 val file = File(path)
                 if (!file.exists()) file.outputStream().use(draw)
-                file.inputStream().use { IOUtils.copy(it, this) }
+                file.inputStream().use { it.copyTo(this) }
             } else draw(this)
         }
 

@@ -2,10 +2,6 @@ package ru.o4fun.events
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonConfiguration
-import kotlinx.serialization.stringify
-import org.springframework.web.socket.TextMessage
 import ru.o4fun.Building
 import ru.o4fun.Resource
 import ru.o4fun.models.PlayerImpl
@@ -14,7 +10,6 @@ import ru.o4fun.models.ValueImpl
 
 @Serializable
 sealed class Outgoing {
-    fun toMsg() = TextMessage(Json(JsonConfiguration.Default).stringify(this))
     @Serializable
     @SerialName("unitBought")
     class UnitBought(

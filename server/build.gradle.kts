@@ -60,9 +60,8 @@ dependencies {
 
     implementation(starter("data-jpa"))
     implementation(starter("thymeleaf"))
-    implementation(starter("web"))
+    implementation(starter("webflux"))
 //    implementation(starter("security"))
-    implementation(starter("websocket"))
     implementation(starter("test"))
     runtime("org.springframework.boot:spring-boot-devtools:$springBootVersion")
 

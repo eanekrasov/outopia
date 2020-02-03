@@ -1,12 +1,10 @@
 package ru.o4fun
 
-import org.springframework.web.socket.WebSocketSession
 import ru.o4fun.events.Incoming
 import ru.o4fun.events.Outgoing
 import ru.o4fun.interfaces.Cell
 import ru.o4fun.interfaces.Player
 import ru.o4fun.models.*
-import java.util.*
 import kotlin.math.min
 import kotlin.math.roundToInt
 import kotlin.math.sqrt
@@ -36,11 +34,6 @@ fun <T> Iterable<T>.flatWalk(times: Int, transform: (T) -> Iterable<T>, action: 
         if (times > 0) transform(it).flatWalk(times - 1, transform, action) else it.action()
     }
 }
-
-fun WebSocketSession.params() = if (uri!!.query.isNullOrEmpty()) Collections.emptyMap() else uri!!.query!!.split("&").map {
-    val idx = it.indexOf("=")
-    (if (idx > 0) it.substring(0, idx) else it) to (if (idx > 0 && it.length > idx + 1) it.substring(idx + 1) else "true")
-}.toMap()
 
 val Map<SquadUnit, Long>.cost: Map<Resource, Long>
     get() {
