@@ -23,21 +23,21 @@ class World(
 
     // region public
 
-    val allPlayers: Collection<Player> get() = players.values
+    val allPlayers: Collection<IPlayer> get() = players.values
 
-    val allSquads: Set<Squad> get() = squads
+    val allSquads: Set<ISquad> get() = squads
 
-    operator fun get(x: Int, y: Int): Cell = if (x in (0 until props.width) && y in (0 until props.height)) cells[x][y] else throw Exception()
+    operator fun get(x: Int, y: Int): ICell = if (x in (0 until props.width) && y in (0 until props.height)) cells[x][y] else throw Exception()
 
-    operator fun get(id: String): Player? = players[id]
+    operator fun get(id: String): IPlayer? = players[id]
 
     fun edit(block: WorldScope.() -> Unit) = WorldScope().block()
 
-    fun addSession(id: String, session: PlayerSession): SessionCallback {
+    fun addSession(id: String, session: IPlayerSession): ISessionCallback {
         val player = players.getOrPut(id) { PlayerImpl(id) }
         player.sessions.add(session)
 
-        return object : SessionCallback {
+        return object : ISessionCallback {
             override val player = player
 
             override fun event(e: Incoming) {

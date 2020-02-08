@@ -2,15 +2,15 @@ package ru.o4fun.interfaces
 
 import ru.o4fun.Resource
 
-interface Value {
-    val cell: Cell
+interface IValue {
+    val cell: ICell
     val level: Int
 
-    interface Building : Value {
+    interface Building : IValue {
         val building: ru.o4fun.Building
     }
 
-    interface Field : Value {
+    interface Field : IValue {
         val resource: Resource
     }
 }

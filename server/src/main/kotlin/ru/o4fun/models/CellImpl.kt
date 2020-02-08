@@ -4,8 +4,8 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import ru.o4fun.collections.BoundSet
 import ru.o4fun.collections.ObservableSet
-import ru.o4fun.interfaces.Cell
-import ru.o4fun.interfaces.CellType
+import ru.o4fun.interfaces.ICell
+import ru.o4fun.interfaces.ICellType
 import kotlin.random.Random
 
 @Serializable
@@ -14,10 +14,10 @@ class CellImpl(
     override val y: Int = 0,
     // never set it by hand, use Player.owned instead
     override var owner: PlayerImpl? = null
-) : Cell {
+) : ICell {
     override val units: MutableMap<SquadUnit, Long> = mutableMapOf()
     @Transient
-    override var type: CellType = if (Random.nextFloat() > 0.9) CellType.FOREST else CellType.DEFAULT
+    override var type: ICellType = if (Random.nextFloat() > 0.9) ICellType.FOREST else ICellType.DEFAULT
     @Transient
     override val value = object : ObservableSet<ValueImpl>() {}
     @Transient

@@ -4,7 +4,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import ru.o4fun.Building
 import ru.o4fun.Resource
-import ru.o4fun.interfaces.Value
+import ru.o4fun.interfaces.IValue
 
 @Serializable
 sealed class Outgoing {
@@ -41,7 +41,7 @@ sealed class Outgoing {
     class Discovered(
         val x: Int = 0,
         val y: Int = 0,
-        val value: Set<Value>
+        val value: Set<IValue>
     ) : Outgoing()
 
     @Serializable

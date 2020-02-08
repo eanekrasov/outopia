@@ -8,8 +8,8 @@ import ru.o4fun.events.SchedulerReady
 import ru.o4fun.extensions.cost
 import ru.o4fun.extensions.hasResources
 import ru.o4fun.extensions.hasUnits
-import ru.o4fun.interfaces.Cell
-import ru.o4fun.interfaces.PlayerSession
+import ru.o4fun.interfaces.ICell
+import ru.o4fun.interfaces.IPlayerSession
 import ru.o4fun.models.*
 import ru.o4fun.properties.AppProperties
 import kotlin.random.Random
@@ -103,15 +103,15 @@ class BotsService(
             }
         }
 
-        fun discover(cell: Cell) = session.event(Incoming.Discover(cell.x, cell.y))
+        fun discover(cell: ICell) = session.event(Incoming.Discover(cell.x, cell.y))
         fun discover(x: Int, y: Int) = session.event(Incoming.Discover(x, y))
-        fun own(cell: Cell) = session.event(Incoming.Own(cell.x, cell.y))
-        private fun upgradeField(cell: Cell, resource: Resource) = session.event(Incoming.FieldUpgrade(cell.x, cell.y, resource))
-        private fun upgradeBuilding(cell: Cell, building: Building) = session.event(Incoming.BuildingUpgrade(cell.x, cell.y, building))
-        private fun buyUnits(cell: Cell, units: Map<SquadUnit, Long>) = session.event(Incoming.UnitBuy(cell.x, cell.y, units))
-        private fun sendSquad(cell: Cell, x: Int, y: Int, units: Map<SquadUnit, Long>) = session.event(Incoming.SquadSend(cell.x, cell.y, x, y, units.toMap()))
+        fun own(cell: ICell) = session.event(Incoming.Own(cell.x, cell.y))
+        private fun upgradeField(cell: ICell, resource: Resource) = session.event(Incoming.FieldUpgrade(cell.x, cell.y, resource))
+        private fun upgradeBuilding(cell: ICell, building: Building) = session.event(Incoming.BuildingUpgrade(cell.x, cell.y, building))
+        private fun buyUnits(cell: ICell, units: Map<SquadUnit, Long>) = session.event(Incoming.UnitBuy(cell.x, cell.y, units))
+        private fun sendSquad(cell: ICell, x: Int, y: Int, units: Map<SquadUnit, Long>) = session.event(Incoming.SquadSend(cell.x, cell.y, x, y, units.toMap()))
 
-        inner class BotSession : PlayerSession {
+        inner class BotSession : IPlayerSession {
             override fun sendMessage(msg: Outgoing) = onOutgoingEvent(msg)
         }
     }

@@ -5,15 +5,15 @@ import kotlinx.serialization.Transient
 import ru.o4fun.Resource
 import ru.o4fun.collections.BoundSet
 import ru.o4fun.collections.ObservableSet
-import ru.o4fun.interfaces.Player
-import ru.o4fun.interfaces.PlayerSession
+import ru.o4fun.interfaces.IPlayer
+import ru.o4fun.interfaces.IPlayerSession
 
 @Serializable
-class PlayerImpl(override val id: String) : Player {
+class PlayerImpl(override val id: String) : IPlayer {
     @Transient
     val incomingQueue = mutableListOf<Incoming>()
     @Transient
-    val sessions = mutableSetOf<PlayerSession>()
+    val sessions = mutableSetOf<IPlayerSession>()
     @Transient
     override val resources = Resource.values().map { it to 0L }.toMap().toMutableMap()
     @Transient

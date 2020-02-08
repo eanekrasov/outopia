@@ -13,8 +13,8 @@ import org.springframework.web.reactive.result.view.Rendering
 import reactor.core.publisher.Flux
 import reactor.core.publisher.FluxSink
 import ru.o4fun.exceptions.NotFoundException
-import ru.o4fun.interfaces.Cell
-import ru.o4fun.interfaces.CellType
+import ru.o4fun.interfaces.ICell
+import ru.o4fun.interfaces.ICellType
 import ru.o4fun.properties.AppProperties
 import ru.o4fun.services.OutopiaService
 import java.awt.image.BufferedImage
@@ -78,7 +78,7 @@ class MapController(
         z: Int,
         x: Int,
         y: Int,
-        check: (Cell) -> Boolean = { true }
+        check: (ICell) -> Boolean = { true }
     ): BufferedImage {
         if (z !in 1..6) throw NotFoundException()
         val t = 1 shl z
@@ -105,7 +105,7 @@ class MapController(
                                         else -> border
                                     }, dx * t, dy * t, null
                                 )
-                                if (cell.type == CellType.FOREST) drawImage(forest[(xx + yy) % 5], dx * t, dy * t, null)
+                                if (cell.type == ICellType.FOREST) drawImage(forest[(xx + yy) % 5], dx * t, dy * t, null)
                             }
                         }
                     }

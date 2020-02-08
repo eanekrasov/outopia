@@ -6,7 +6,7 @@ import org.springframework.web.reactive.socket.WebSocketSession
 import reactor.core.publisher.Flux
 import ru.o4fun.extensions.parseIncoming
 import ru.o4fun.extensions.stringify
-import ru.o4fun.interfaces.PlayerSession
+import ru.o4fun.interfaces.IPlayerSession
 import ru.o4fun.models.Outgoing
 import ru.o4fun.services.OutopiaService
 import java.util.*
@@ -24,7 +24,7 @@ class SocketHandler(
     inner class SocketSession(
         private val session: WebSocketSession,
         id: String
-    ) : PlayerSession {
+    ) : IPlayerSession {
         private val callback = world.addSession(id, this)
 
         fun process() = session.receive().doOnNext {

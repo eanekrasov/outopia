@@ -1,6 +1,6 @@
 package ru.o4fun.interfaces
 
-enum class CellType {
+enum class ICellType {
     DEFAULT,
     FOREST
 }

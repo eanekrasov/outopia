@@ -1,7 +1,7 @@
 package ru.o4fun.extensions
 
 import ru.o4fun.Resource
-import ru.o4fun.interfaces.Player
+import ru.o4fun.interfaces.IPlayer
 import ru.o4fun.models.Outgoing
 import ru.o4fun.models.PlayerImpl
 import ru.o4fun.models.ValueImpl
@@ -23,7 +23,7 @@ fun PlayerImpl.send(e: Outgoing, parentsLevel: Int) {
     }
 }
 
-fun Player.hasResources(which: Map<Resource, Long>) =
+fun IPlayer.hasResources(which: Map<Resource, Long>) =
     which.all { resources.getOrDefault(it.key, 0) >= it.value }
 
 fun PlayerImpl.tryTakeResources(which: Map<Resource, Long>, callback: () -> Unit) = try {

@@ -1,7 +1,7 @@
 package ru.o4fun.extensions
 
 import ru.o4fun.Resource
-import ru.o4fun.interfaces.Cell
+import ru.o4fun.interfaces.ICell
 import ru.o4fun.models.World
 import ru.o4fun.models.SquadUnit
 import kotlin.math.min
@@ -32,7 +32,7 @@ fun MutableMap<SquadUnit, Long>.strike(units: MutableMap<SquadUnit, Long>) {
 
 fun Map<SquadUnit, Long>.hasUnits() = any { unit -> unit.value > 0 }
 
-inline fun <reified T> World.map(transform: (Cell) -> T): Array<Array<T>> = mapXY { (x, y) -> transform(get(x, y)) }
+inline fun <reified T> World.map(transform: (ICell) -> T): Array<Array<T>> = mapXY { (x, y) -> transform(get(x, y)) }
 
 inline fun <reified T> World.mapXY(transform: (Pair<Int, Int>) -> T): Array<Array<T>> =
     (0 until props.width).map { x -> (0 until props.height).map { y -> transform(x to y) }.toTypedArray() }.toTypedArray()
