@@ -18,6 +18,8 @@ tasks {
             jvmTarget = "1.8"
             freeCompilerArgs = freeCompilerArgs + arrayOf(
                 "-Xjsr305=strict",
+                "-Xuse-experimental=kotlinx.coroutines.FlowPreview",
+                "-Xuse-experimental=kotlinx.coroutines.ExperimentalCoroutinesApi",
                 "-Xuse-experimental=kotlinx.serialization.UnstableDefault"
             )
         }

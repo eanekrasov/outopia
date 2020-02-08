@@ -16,15 +16,15 @@ infix fun Cell.distance(cell: Cell) = sqrt(((x - cell.x) * (x - cell.x) + (y - c
 
 fun Cell.hasUnits(which: Map<SquadUnit, Long>) = which.all { units.getOrDefault(it.key, 0) >= it.value }
 
-fun CellImpl.buildingIn(which: Building, callback: (ValueImpl.BuildingImpl) -> Unit) = value.forEach {
+suspend fun CellImpl.buildingIn(which: Building, callback: suspend (ValueImpl.BuildingImpl) -> Unit) = value.forEach {
     if (it is ValueImpl.BuildingImpl && it.building == which) callback(it)
 }
 
-fun CellImpl.fieldIn(which: Resource, callback: (ValueImpl.FieldImpl) -> Unit) = value.forEach {
+suspend fun CellImpl.fieldIn(which: Resource, callback: suspend (ValueImpl.FieldImpl) -> Unit) = value.forEach {
     if (it is ValueImpl.FieldImpl && it.resource == which) callback(it)
 }
 
-fun CellImpl.tryTakeUnits(which: Map<SquadUnit, Long>, callback: () -> Unit) = try {
+suspend fun CellImpl.tryTakeUnits(which: Map<SquadUnit, Long>, callback: suspend () -> Unit) = try {
     if (hasUnits(which)) {
         callback()
         minusUnits(which)
