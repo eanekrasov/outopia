@@ -23,6 +23,6 @@ class OutopiaApi(
         @RequestParam y: Int
     ) = Json.stringify(ValueImpl.serializer().set, world.private[x, y].value)
 
-    @GetMapping(path = ["/owned"], produces = [MediaType.TEXT_EVENT_STREAM_VALUE])
-    fun owned() = world.ownedFlow()
+    @GetMapping(path = ["/events"], produces = [MediaType.TEXT_EVENT_STREAM_VALUE])
+    fun owned() = world.private.eventsFlow()
 }

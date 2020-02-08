@@ -11,6 +11,8 @@ import ru.o4fun.interfaces.PlayerSession
 @Serializable
 class PlayerImpl(override val id: String) : Player {
     @Transient
+    val incomingQueue = mutableListOf<Incoming>()
+    @Transient
     val sessions = mutableSetOf<PlayerSession>()
     @Transient
     override val resources = Resource.values().map { it to 0L }.toMap().toMutableMap()

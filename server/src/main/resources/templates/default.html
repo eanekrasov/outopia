@@ -36,7 +36,7 @@
 <script th:inline="javascript" type="module">
     import {SSE} from "/SSE.js";
 
-    const sse = new SSE("/api/v1/outopia/owned", (data) => console.log(data));
+    const sse = new SSE("/api/v1/outopia/events", (data) => console.log(data));
     window.onload = () => sse.start();
     window.onbeforeunload = () => sse.stop();
 </script>
