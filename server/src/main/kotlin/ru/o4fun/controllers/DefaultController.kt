@@ -15,6 +15,10 @@ class DefaultController(
 ) {
     private val world = outopiaService.world
     @GetMapping("/")
+    fun default() = Rendering.view("default")
+        .build()
+
+    @GetMapping("/table")
     fun table() = Rendering.view("table")
         .modelAttribute("height", world.props.height)
         .modelAttribute("width", world.props.width)

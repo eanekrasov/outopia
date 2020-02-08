@@ -1,8 +1,6 @@
 <!DOCTYPE html>
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
 
-<!--/*@thymesVar id="players" type="java.util.Collection<ru.o4fun.interfaces.Player>"*/-->
-
 <head>
     <meta charset="utf-8"/>
     <meta content="IE=edge" http-equiv="X-UA-Compatible"/>
@@ -35,46 +33,12 @@
         </ul>
     </div>
 </nav>
-<div class="table-responsive">
-    <table class="table" id="players">
-        <thead>
-        <tr>
-            <th>id</th>
-            <th>cells</th>
-            <th>children</th>
-            <th>owned</th>
-            <th>resources</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr th:each="it: ${players}">
-            <td><a th:href="@{/players/{id}(id=${it.id})}" th:text="${it.id}"></a></td>
-            <td th:text="${it.discovered.size}"></td>
-            <td th:text="${it.children.size}"></td>
-            <td>
-                <th:block th:each="cell : ${it.owned}">
-                    <p><a th:href="@{/cells/{x}/{y}(x=${cell.x},y=${cell.y})}" th:text="'[' + ${cell.x} + ',' + ${cell.y} + ']'"></a></p>
-                    <p><span th:each="unit : ${cell.units}" th:text="${unit.key} + ' ' + ${unit.value}"></span></p>
-                    <ul class="values" th:if="${cell.value.size > 0}">
-                        <li th:each="it: ${cell.value}">
-                            <th:block th:if="${it instanceof T(ru.o4fun.interfaces.Value.Building)}">
-                                <span th:text="${it.building}"></span>
-                                <span th:text="${it.level}"></span>
-                            </th:block>
-                            <th:block th:if="${it instanceof T(ru.o4fun.interfaces.Value.Field)}">
-                                <span th:text="${it.resource}"></span>
-                                <span th:text="${it.level}"></span>
-                            </th:block>
-                        </li>
-                    </ul>
-                </th:block>
-            </td>
-            <td><p th:each="r:${it.resources}">
-                <span th:text="${r.key}"></span> <span th:text="${r.value}"></span>
-            </p></td>
-        </tr>
-        </tbody>
-    </table>
-</div>
+<script th:inline="javascript" type="module">
+    import {SSE} from "/SSE.js";
+
+    const sse = new SSE("/api/v1/outopia/owned", (data) => console.log(data));
+    window.onload = () => sse.start();
+    window.onbeforeunload = () => sse.stop();
+</script>
 </body>
 </html>

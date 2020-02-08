@@ -2,6 +2,7 @@ package ru.o4fun.controllers.api.v1
 
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.set
+import org.springframework.http.MediaType
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
@@ -14,11 +15,14 @@ import ru.o4fun.services.OutopiaService
 class OutopiaApi(
     outopiaService: OutopiaService
 ) {
-    val world = outopiaService.world.private
+    val world = outopiaService.world
 
     @GetMapping("value")
     internal fun value(
         @RequestParam x: Int,
         @RequestParam y: Int
-    ) = Json.stringify(ValueImpl.serializer().set, world[x, y].value)
+    ) = Json.stringify(ValueImpl.serializer().set, world.private[x, y].value)
+
+    @GetMapping(path = ["/owned"], produces = [MediaType.TEXT_EVENT_STREAM_VALUE])
+    fun owned() = world.ownedFlow()
 }

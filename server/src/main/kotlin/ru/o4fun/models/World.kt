@@ -2,8 +2,12 @@ package ru.o4fun.models
 
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.asFlow
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonConfiguration
 import ru.o4fun.Building
 import ru.o4fun.Resource
 import ru.o4fun.annotations.DslScope
@@ -102,6 +106,10 @@ class World(
     private val players = mutableMapOf<String, PlayerImpl>()
     private val squads = mutableSetOf<SquadImpl>()
 
+    fun ownedFlow() = ownedChannel.asFlow()
+    private val ownedChannel = BroadcastChannel<String>(10)
+    private suspend fun sendOwned(it: Outgoing.Owned) = ownedChannel.send(json.stringify(Outgoing.serializer(), it))
+
     private suspend fun updateResources() = coroutineScope {
         players.values.map {
             async {
@@ -137,6 +145,7 @@ class World(
                             squad.owner.owned.add(cell)
                             cell.addUnits(attacker)
                             cell.sendAll(cell.ownedEvent(), props.parentsLevel)
+                            sendOwned(cell.ownedEvent())
                         }
                     }
                 }
@@ -220,4 +229,7 @@ class World(
 
     // endregion
 
+    companion object {
+        val json = Json(configuration = JsonConfiguration.Default.copy(classDiscriminator = "type"))
+    }
 }
