@@ -3,7 +3,6 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 val springBootVersion: String by project
 val kotlinCoroutinesVersion: String by project
 val kotlinSerializationVersion: String by project
-val kofuVersion: String by project
 
 plugins {
     kotlin("jvm")
@@ -44,7 +43,7 @@ dependencyManagement {
 dependencies {
     fun kotlinx(module: String, version: String) = "org.jetbrains.kotlinx:kotlinx-$module:$version"
     fun boot(module: String, version: String = springBootVersion) = "org.springframework.boot:spring-boot-$module:$version"
-    fun starter(module: String, version: String = springBootVersion) = "org.springframework.boot:spring-boot-starter-$module:$version"
+    fun starter(module: String, version: String = springBootVersion) = boot("starter-$module", version)
     fun bower(module: String, version: String = "+") = "org.webjars.bower:$module:$version"
 
     implementation(project(":shared"))
