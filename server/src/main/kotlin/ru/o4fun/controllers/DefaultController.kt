@@ -6,7 +6,6 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.reactive.result.view.Rendering
 import org.thymeleaf.spring5.context.webflux.ReactiveDataDriverContextVariable
 import reactor.core.publisher.Flux
-import ru.o4fun.exceptions.NotFoundException
 import ru.o4fun.services.OutopiaService
 
 @Controller
@@ -25,21 +24,9 @@ class DefaultController(
         .modelAttribute("world", world)
         .build()
 
-    @GetMapping("/players")
-    fun players() = Rendering.view("players")
-        .modelAttribute("players", ReactiveDataDriverContextVariable(Flux.fromIterable(world.allPlayers), 1))
-        .build()
-
     @GetMapping("/squads")
     fun squads() = Rendering.view("squads")
         .modelAttribute("squads", ReactiveDataDriverContextVariable(Flux.fromIterable(world.allSquads), 1))
-        .build()
-
-    @GetMapping("/players/{id}")
-    fun player(
-        @PathVariable("id") id: String
-    ) = Rendering.view("player")
-        .modelAttribute("player", world[id] ?: throw NotFoundException())
         .build()
 
     @GetMapping("/cells/{x}/{y}")
