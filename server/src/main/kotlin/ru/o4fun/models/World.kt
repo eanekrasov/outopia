@@ -6,8 +6,6 @@ import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.asFlow
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonConfiguration
 import ru.o4fun.Building
 import ru.o4fun.Resource
 import ru.o4fun.annotations.DslScope
@@ -229,7 +227,4 @@ class World(
 
     // endregion
 
-    companion object {
-        val json = Json(configuration = JsonConfiguration.Default.copy(classDiscriminator = "type"))
-    }
 }
