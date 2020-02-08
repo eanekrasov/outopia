@@ -4,7 +4,6 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import ru.o4fun.Building
 import ru.o4fun.Resource
-import ru.o4fun.interfaces.Player
 import ru.o4fun.interfaces.Value
 
 @Serializable
@@ -48,9 +47,9 @@ sealed class Outgoing {
     @Serializable
     @SerialName("owned")
     class Owned(
-        val x: Int = 0,
-        val y: Int = 0,
-        val owner: Player?
+        val x: Int,
+        val y: Int,
+        val owner: String?
     ) : Outgoing()
 
     @Serializable

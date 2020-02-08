@@ -9,7 +9,6 @@ import ru.o4fun.extensions.cost
 import ru.o4fun.extensions.hasResources
 import ru.o4fun.extensions.hasUnits
 import ru.o4fun.interfaces.Cell
-import ru.o4fun.interfaces.Player
 import ru.o4fun.interfaces.PlayerSession
 import ru.o4fun.models.*
 import ru.o4fun.properties.AppProperties
@@ -62,7 +61,7 @@ class BotsService(
 
     inner class Bot(id: String) {
         val session = world.addSession(id, BotSession())
-        private val foes = mutableMapOf<Pair<Int, Int>, Player>()
+        private val foes = mutableMapOf<Pair<Int, Int>, String>()
 
         fun tick() {
             session.player.owned.forEach { cell ->
@@ -78,7 +77,7 @@ class BotsService(
                 }
                 val units = mapOf(SquadUnit.INFANTRY to 1L, SquadUnit.GUNNER to 1L)
                 if (session.player.hasResources(units.cost)) buyUnits(cell, units)
-                if (cell.units.hasUnits()) foes.entries.firstOrNull { (_, owner) -> owner != session.player }?.key?.let { (x, y) ->
+                if (cell.units.hasUnits()) foes.entries.firstOrNull { (_, owner) -> owner != session.player.id }?.key?.let { (x, y) ->
                     sendSquad(cell, x, y, cell.units)
                 }
             }
@@ -88,12 +87,12 @@ class BotsService(
             val cell = world[msg.x, msg.y]
             if (cell.owner != null && cell.owner != session.player) {
                 if (props.verbose) println("${session.player.id} found ${cell.owner?.id} at ${msg.x} ${msg.y}")
-                foes[cell.x to cell.y] = cell.owner!!
+                foes[cell.x to cell.y] = cell.owner!!.id
             }
         }
 
         private fun onOwnedEvent(msg: Outgoing.Owned) {
-            if (props.verbose) println("${msg.owner?.id} owned ${msg.x} ${msg.y}")
+            if (props.verbose) println("${msg.owner} owned ${msg.x} ${msg.y}")
             foes[msg.x to msg.y] = msg.owner!!
         }
 
