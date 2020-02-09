@@ -3,8 +3,9 @@ package ru.o4fun.models
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
-import ru.o4fun.Building
-import ru.o4fun.Resource
+import ru.o4fun.enums.Building
+import ru.o4fun.enums.Resource
+import ru.o4fun.enums.SquadUnit
 
 @Serializable
 sealed class Incoming {

@@ -1,6 +1,6 @@
 package ru.o4fun.interfaces
 
-import ru.o4fun.Resource
+import ru.o4fun.enums.Resource
 
 interface IPlayer {
     val name: String

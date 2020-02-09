@@ -1,6 +1,6 @@
 package ru.o4fun.interfaces
 
-import ru.o4fun.Resource
+import ru.o4fun.enums.Resource
 
 interface IValue {
     val x: Int
@@ -8,7 +8,7 @@ interface IValue {
     val level: Int
 
     interface Building : IValue {
-        val building: ru.o4fun.Building
+        val building: ru.o4fun.enums.Building
     }
 
     interface Field : IValue {

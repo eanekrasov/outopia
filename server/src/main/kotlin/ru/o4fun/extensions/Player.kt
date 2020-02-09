@@ -1,6 +1,6 @@
 package ru.o4fun.extensions
 
-import ru.o4fun.Resource
+import ru.o4fun.enums.Resource
 import ru.o4fun.interfaces.IPlayer
 import ru.o4fun.models.Outgoing
 import ru.o4fun.models.Player

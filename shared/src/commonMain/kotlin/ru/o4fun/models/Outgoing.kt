@@ -2,8 +2,9 @@ package ru.o4fun.models
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import ru.o4fun.Building
-import ru.o4fun.Resource
+import ru.o4fun.enums.Building
+import ru.o4fun.enums.Resource
+import ru.o4fun.enums.SquadUnit
 import ru.o4fun.interfaces.IPlayer
 import ru.o4fun.interfaces.IValue
 
@@ -73,7 +74,7 @@ sealed class Outgoing {
     class FieldUpgraded(
         val x: Int = 0,
         val y: Int = 0,
-        val resource: Resource = Resource.GOLD,
+        val resource: Resource = Resource.Gold,
         val level: Int = 0
     ) : Outgoing()
 }

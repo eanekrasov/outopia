@@ -1,6 +1,6 @@
 package ru.o4fun.interfaces
 
-import ru.o4fun.models.SquadUnit
+import ru.o4fun.enums.SquadUnit
 
 interface ISquad {
     val owner: IPlayer

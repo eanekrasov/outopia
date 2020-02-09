@@ -1,9 +1,9 @@
 package ru.o4fun.extensions
 
-import ru.o4fun.Resource
+import ru.o4fun.enums.Resource
 import ru.o4fun.interfaces.ICell
 import ru.o4fun.models.World
-import ru.o4fun.models.SquadUnit
+import ru.o4fun.enums.SquadUnit
 import kotlin.math.min
 
 val Map<SquadUnit, Long>.cost: Map<Resource, Long>

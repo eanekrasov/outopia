@@ -1,6 +1,6 @@
 package ru.o4fun.entities
 
-import ru.o4fun.Resource
+import ru.o4fun.enums.Resource
 import javax.persistence.*
 
 @Entity

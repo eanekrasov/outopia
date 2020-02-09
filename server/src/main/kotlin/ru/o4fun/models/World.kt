@@ -6,8 +6,8 @@ import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.asFlow
-import ru.o4fun.Building
-import ru.o4fun.Resource
+import ru.o4fun.enums.Building
+import ru.o4fun.enums.Resource
 import ru.o4fun.annotations.DslScope
 import ru.o4fun.extensions.*
 import ru.o4fun.interfaces.*

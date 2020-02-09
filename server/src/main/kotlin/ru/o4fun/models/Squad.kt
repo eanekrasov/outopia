@@ -1,5 +1,6 @@
 package ru.o4fun.models
 
+import ru.o4fun.enums.SquadUnit
 import ru.o4fun.extensions.distance
 import ru.o4fun.interfaces.ISquad
 

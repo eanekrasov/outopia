@@ -1,6 +1,6 @@
 package ru.o4fun.models
 
-import ru.o4fun.Resource
+import ru.o4fun.enums.Resource
 import ru.o4fun.collections.BoundSet
 import ru.o4fun.collections.ObservableSet
 import ru.o4fun.interfaces.IPlayer

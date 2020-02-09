@@ -1,4 +1,4 @@
-package ru.o4fun
+package ru.o4fun.enums
 
 enum class Building(val className: String) {
     Barracks("barracks"),

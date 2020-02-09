@@ -1,11 +1,11 @@
 package ru.o4fun.extensions
 
-import ru.o4fun.Building
-import ru.o4fun.Resource
+import ru.o4fun.enums.Building
+import ru.o4fun.enums.Resource
 import ru.o4fun.interfaces.ICell
 import ru.o4fun.models.Cell
 import ru.o4fun.models.Outgoing
-import ru.o4fun.models.SquadUnit
+import ru.o4fun.enums.SquadUnit
 import ru.o4fun.models.Value
 import kotlin.math.roundToInt
 import kotlin.math.sqrt

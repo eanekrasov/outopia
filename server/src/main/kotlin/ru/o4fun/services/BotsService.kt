@@ -2,8 +2,9 @@ package ru.o4fun.services
 
 import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Service
-import ru.o4fun.Building
-import ru.o4fun.Resource
+import ru.o4fun.enums.Building
+import ru.o4fun.enums.Resource
+import ru.o4fun.enums.SquadUnit
 import ru.o4fun.events.SchedulerReady
 import ru.o4fun.extensions.cost
 import ru.o4fun.extensions.hasResources
@@ -76,7 +77,7 @@ class BotsService(
                         }
                     }
                 }
-                val units = mapOf(SquadUnit.INFANTRY to 1L, SquadUnit.GUNNER to 1L)
+                val units = mapOf(SquadUnit.Infantry to 1L, SquadUnit.Gunner to 1L)
                 if (session.player.hasResources(units.cost)) buyUnits(cell, units)
                 if (cell.units.hasUnits()) foes.entries.firstOrNull { (_, owner) -> owner?.name != session.player.name }?.key?.let { (x, y) ->
                     sendSquad(cell, x, y, cell.units)

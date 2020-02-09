@@ -1,7 +1,7 @@
 package ru.o4fun.entities
 
 import kotlinx.serialization.Transient
-import ru.o4fun.models.SquadUnit
+import ru.o4fun.enums.SquadUnit
 import javax.persistence.*
 
 @Entity

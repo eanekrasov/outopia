@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.data.repository.findByIdOrNull
-import ru.o4fun.models.SquadUnit
+import ru.o4fun.enums.SquadUnit
 import ru.o4fun.models.Value
 import ru.o4fun.repositories.CellRepository
 import ru.o4fun.repositories.PlayerRepository
@@ -29,7 +29,7 @@ class ServerApplicationTests {
         val key = CellEntity.Key(0, 0)
         cellRepo.save(CellEntity(key, player))
         cellRepo.save(cellRepo.findByIdOrNull(key)!!.apply {
-            units[SquadUnit.INFANTRY] = 1
+            units[SquadUnit.Infantry] = 1
             discoveredBy.add(player)
             values.add(json.stringify(Value.serializer(), Value.Field(cell.x, cell.y)))
         })

@@ -1,7 +1,7 @@
 package ru.o4fun.entities
 
-import ru.o4fun.CellType
-import ru.o4fun.models.SquadUnit
+import ru.o4fun.enums.CellType
+import ru.o4fun.enums.SquadUnit
 import java.io.Serializable
 import javax.persistence.*
 
@@ -25,7 +25,7 @@ data class CellEntity(
     val units: MutableMap<SquadUnit, Long> = mutableMapOf(),
 
     @Enumerated(EnumType.STRING)
-    var type: CellType = CellType.DEFAULT,
+    var type: CellType = CellType.Default,
 
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(
