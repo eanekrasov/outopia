@@ -4,7 +4,7 @@ import org.springframework.stereotype.Component
 import org.springframework.web.reactive.socket.WebSocketHandler
 import org.springframework.web.reactive.socket.WebSocketSession
 import reactor.core.publisher.Flux
-import ru.o4fun.extensions.parseIncoming
+import ru.o4fun.extensions.parseAsIncoming
 import ru.o4fun.extensions.stringify
 import ru.o4fun.interfaces.IPlayerSession
 import ru.o4fun.models.Outgoing
@@ -28,7 +28,7 @@ class SocketHandler(
         private val callback = world.addSession(id, this)
 
         fun process() = session.receive().doOnNext {
-            callback.event(it.payloadAsText.parseIncoming())
+            callback.event(it.payloadAsText.parseAsIncoming())
         }.doFinally {
             callback.remove()
         }.then()
