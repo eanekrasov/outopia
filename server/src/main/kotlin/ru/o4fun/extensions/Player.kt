@@ -3,10 +3,10 @@ package ru.o4fun.extensions
 import ru.o4fun.Resource
 import ru.o4fun.interfaces.IPlayer
 import ru.o4fun.models.Outgoing
-import ru.o4fun.models.PlayerImpl
-import ru.o4fun.models.ValueImpl
+import ru.o4fun.models.Player
+import ru.o4fun.models.Value
 
-fun PlayerImpl.send(e: Outgoing, parentsLevel: Int) {
+fun Player.send(e: Outgoing, parentsLevel: Int) {
     sessions.forEach {
         try {
             it.sendMessage(e)
@@ -26,7 +26,7 @@ fun PlayerImpl.send(e: Outgoing, parentsLevel: Int) {
 fun IPlayer.hasResources(which: Map<Resource, Long>) =
     which.all { resources.getOrDefault(it.key, 0) >= it.value }
 
-fun PlayerImpl.tryTakeResources(which: Map<Resource, Long>, callback: () -> Unit) = try {
+fun Player.tryTakeResources(which: Map<Resource, Long>, callback: () -> Unit) = try {
     if (hasResources(which)) {
         callback()
         minusResources(which)
@@ -36,13 +36,13 @@ fun PlayerImpl.tryTakeResources(which: Map<Resource, Long>, callback: () -> Unit
     false
 }
 
-fun PlayerImpl.minusResources(which: Map<Resource, Long>) =
+fun Player.minusResources(which: Map<Resource, Long>) =
     which.forEach { resources[it.key] = resources.getOrDefault(it.key, 0) - it.value }
 
-fun PlayerImpl.updateResources() = owned.forEach { cell ->
+fun Player.updateResources() = owned.forEach { cell ->
     cell.value.forEach {
         when (it) {
-            is ValueImpl.FieldImpl -> {
+            is Value.Field -> {
                 resources[it.resource] = resources.getOrDefault(it.resource, 0) + it.level
             }
         }

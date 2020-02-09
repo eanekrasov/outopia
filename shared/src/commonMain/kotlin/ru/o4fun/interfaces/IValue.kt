@@ -3,7 +3,8 @@ package ru.o4fun.interfaces
 import ru.o4fun.Resource
 
 interface IValue {
-    val cell: ICell
+    val x: Int
+    val y: Int
     val level: Int
 
     interface Building : IValue {

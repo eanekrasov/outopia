@@ -4,6 +4,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import ru.o4fun.Building
 import ru.o4fun.Resource
+import ru.o4fun.interfaces.IPlayer
 import ru.o4fun.interfaces.IValue
 
 @Serializable
@@ -49,7 +50,7 @@ sealed class Outgoing {
     class Owned(
         val x: Int,
         val y: Int,
-        val owner: String?
+        val owner: IPlayer?
     ) : Outgoing()
 
     @Serializable

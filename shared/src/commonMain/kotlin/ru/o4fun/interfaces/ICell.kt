@@ -1,5 +1,6 @@
 package ru.o4fun.interfaces
 
+import ru.o4fun.CellType
 import ru.o4fun.models.SquadUnit
 
 interface ICell {
@@ -8,6 +9,6 @@ interface ICell {
     val owner: IPlayer?
     val value: Set<IValue>
     val discoveredBy: Set<IPlayer>
-    val type: ICellType
+    val type: CellType
     val units: Map<SquadUnit, Long>
 }

@@ -6,6 +6,7 @@ val kotlinSerializationVersion: String by project
 
 plugins {
     kotlin("jvm")
+    kotlin("plugin.jpa")
     kotlin("plugin.spring")
     kotlin("plugin.serialization")
     id("org.springframework.boot")
@@ -36,12 +37,6 @@ tasks {
     }
 }
 
-dependencyManagement {
-    imports {
-        mavenBom("org.springframework.boot.experimental:spring-boot-bom-r2dbc:0.1.0.BUILD-SNAPSHOT")
-    }
-}
-
 dependencies {
     fun kotlinx(module: String, version: String) = "org.jetbrains.kotlinx:kotlinx-$module:$version"
     fun boot(module: String, version: String = springBootVersion) = "org.springframework.boot:spring-boot-$module:$version"
@@ -66,7 +61,7 @@ dependencies {
 
     // region Spring Boot
 
-    implementation("org.springframework.boot.experimental:spring-boot-starter-data-r2dbc")
+    implementation(starter("data-jpa"))
     implementation(starter("thymeleaf"))
     implementation(starter("webflux"))
     runtimeOnly(boot("devtools"))
@@ -86,7 +81,7 @@ dependencies {
 
     // region db
 
-    runtimeOnly("io.r2dbc:r2dbc-h2")
+//    runtimeOnly("io.r2dbc:r2dbc-h2")
     runtimeOnly("com.h2database:h2")
     runtimeOnly("mysql:mysql-connector-java")
     implementation("org.flywaydb:flyway-core:6.2.1")
@@ -98,7 +93,7 @@ dependencies {
     testImplementation(starter("test")) {
         exclude(group = "org.junit.vintage", module = "junit-vintage-engine")
     }
-    testImplementation("org.springframework.boot.experimental:spring-boot-test-autoconfigure-r2dbc")
+    //testImplementation("org.springframework.boot.experimental:spring-boot-test-autoconfigure-r2dbc")
     testImplementation("io.projectreactor:reactor-test")
 
     // endregion

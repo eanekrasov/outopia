@@ -33,8 +33,8 @@ class World(
 
     fun edit(block: WorldScope.() -> Unit) = WorldScope().block()
 
-    fun addSession(id: String, session: IPlayerSession): ISessionCallback {
-        val player = players.getOrPut(id) { PlayerImpl(id) }
+    fun addSession(name: String, session: IPlayerSession): ISessionCallback {
+        val player = players.getOrPut(name) { Player(name) }
         player.sessions.add(session)
 
         return object : ISessionCallback {
@@ -89,20 +89,20 @@ class World(
 
     @Suppress("unused")
     inner class Private {
-        val allPlayers: Collection<PlayerImpl> get() = players.values
+        val allPlayers: Collection<Player> get() = players.values
 
-        val allSquads: Set<SquadImpl> get() = squads
+        val allSquads: Set<Squad> get() = squads
 
-        operator fun get(x: Int, y: Int): CellImpl = if (x in (0 until props.width) && y in (0 until props.height)) cells[x][y] else throw Exception()
+        operator fun get(x: Int, y: Int): Cell = if (x in (0 until props.width) && y in (0 until props.height)) cells[x][y] else throw Exception()
 
-        operator fun get(id: String): PlayerImpl? = players[id]
+        operator fun get(id: String): Player? = players[id]
 
         fun eventsFlow() = eventsChannel.asFlow()
     }
 
-    private val cells: Array<Array<CellImpl>> = mapXY { (x, y) -> CellImpl(x, y) }
-    private val players = mutableMapOf<String, PlayerImpl>()
-    private val squads = mutableSetOf<SquadImpl>()
+    private val cells: Array<Array<Cell>> = mapXY { (x, y) -> Cell(x, y) }
+    private val players = mutableMapOf<String, Player>()
+    private val squads = mutableSetOf<Squad>()
 
     private val eventsChannel = BroadcastChannel<Outgoing>(1)
 
@@ -132,7 +132,7 @@ class World(
                         if (cell.units.hasUnits()) {
                             cell.units.strike(attacker)
                             if (attacker.hasUnits()) {
-                                squads.add(SquadImpl(squad.owner, cell, squad.origin, attacker))
+                                squads.add(Squad(squad.owner, cell, squad.origin, attacker))
                             } else {
                                 squad.owner.send(squad.destroyedEvent(), props.parentsLevel)
                                 eventsChannel.send(squad.destroyedEvent())
@@ -161,7 +161,7 @@ class World(
                         when (e) {
                             is Incoming.SquadSend -> if (cell.owner == player) cell.tryTakeUnits(e.units) {
                                 val target = cells[e.tx][e.ty]
-                                val squad = SquadImpl(player, cell, target, e.units)
+                                val squad = Squad(player, cell, target, e.units)
                                 if (props.verbose) println("${player.id} sending ${squad.units} from ${e.x} ${e.y} to ${e.tx} ${e.ty} (${squad.timeout})")
                                 squads.add(squad)
                                 cell.sendAll(squad.sentEvent(), props.parentsLevel)
@@ -223,15 +223,15 @@ class World(
 
     @DslScope
     inner class CellScope(
-        val cell: CellImpl
+        val cell: Cell
     ) {
-        fun field(which: Resource, level: Int = 1, callback: (ValueImpl.FieldImpl) -> Unit = {}) =
-            call(callback, { it.resource == which }) { ValueImpl.FieldImpl(cell, which, level) }
+        fun field(which: Resource, level: Int = 1, callback: (Value.Field) -> Unit = {}) =
+            call(callback, { it.resource == which }) { Value.Field(cell.x, cell.y, which, level) }
 
-        fun building(which: Building, level: Int = 1, callback: (ValueImpl.BuildingImpl) -> Unit = {}) =
-            call(callback, { it.building == which }) { ValueImpl.BuildingImpl(cell, which, level) }
+        fun building(which: Building, level: Int = 1, callback: (Value.Building) -> Unit = {}) =
+            call(callback, { it.building == which }) { Value.Building(cell.x, cell.y, which, level) }
 
-        private inline fun <reified T : ValueImpl> call(callback: (T) -> Unit, denyIf: (T) -> Boolean = { true }, init: () -> T?) =
+        private inline fun <reified T : Value> call(callback: (T) -> Unit, denyIf: (T) -> Boolean = { true }, init: () -> T?) =
             if (!cell.value.any { it is T && denyIf(it) }) init()?.also {
                 cell.value.add(it)
                 callback(it)

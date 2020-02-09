@@ -14,7 +14,7 @@ import reactor.core.publisher.Flux
 import reactor.core.publisher.FluxSink
 import ru.o4fun.exceptions.NotFoundException
 import ru.o4fun.interfaces.ICell
-import ru.o4fun.interfaces.ICellType
+import ru.o4fun.CellType
 import ru.o4fun.properties.AppProperties
 import ru.o4fun.services.OutopiaService
 import java.awt.image.BufferedImage
@@ -105,7 +105,7 @@ class MapController(
                                         else -> border
                                     }, dx * t, dy * t, null
                                 )
-                                if (cell.type == ICellType.FOREST) drawImage(forest[(xx + yy) % 5], dx * t, dy * t, null)
+                                if (cell.type == CellType.FOREST) drawImage(forest[(xx + yy) % 5], dx * t, dy * t, null)
                             }
                         }
                     }
