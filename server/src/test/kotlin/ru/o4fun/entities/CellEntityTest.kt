@@ -2,16 +2,19 @@ package ru.o4fun.entities
 
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
 import org.springframework.data.repository.findByIdOrNull
+import org.springframework.test.context.junit.jupiter.SpringExtension
 import ru.o4fun.enums.SquadUnit
+import ru.o4fun.extensions.stringify
 import ru.o4fun.models.Value
 import ru.o4fun.repositories.CellRepository
-import ru.o4fun.extensions.stringify
 import ru.o4fun.repositories.PlayerRepository
 
-@SpringBootTest
+@ExtendWith(SpringExtension::class)
+@DataJpaTest
 class ServerApplicationTests {
 
     @Autowired
