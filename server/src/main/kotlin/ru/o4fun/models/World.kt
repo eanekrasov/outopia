@@ -57,8 +57,27 @@ class World(
         val pending = mutableListOf<Task>()
         val scheduler = Scheduler(pending)
         val tasks = mutableListOf(
-            Task(1) { callback(scheduler);true },
-            Task(1) { processIncoming();updateResources();updateSquads();false }
+            Task(1) {
+                callback(scheduler)
+                true
+            },
+            Task(1) {
+                players.values.map {
+                    async {
+                        it.processIncoming()
+                        it.updateResources()
+                        it.sendAndBroadcast(it.resourcesEvent(), false)
+                    }
+                }.awaitAll()
+                val processed = squads.filter { it.timeout-- <= 0 }
+                squads.removeAll(processed)
+                processed.groupBy { it.target }.map {
+                    async {
+                        it.key.updateSquads(it.value)
+                    }
+                }.awaitAll()
+                false
+            }
         )
         while (true) {
             if (props.tickDelay - time > 0) delay(props.tickDelay - time)
@@ -116,92 +135,70 @@ class World(
         eventsChannel.send(it)
     }
 
-    private suspend fun updateResources() = coroutineScope {
-        players.values.map {
-            async {
-                it.updateResources()
-                it.sendAndBroadcast(it.resourcesEvent(), false)
-            }
-        }.awaitAll()
-    }
-
-    private suspend fun updateSquads() = coroutineScope {
-        squads.forEach { it.timeout-- }
-        val processed = squads.filter { it.timeout <= 0 }
-        if (processed.isNotEmpty()) {
-            squads.removeAll(processed)
-            processed.groupBy { it.target }.map { (cell, list) ->
-                async {
-                    list.filter { cell.owner == it.owner }.forEach { cell.addUnits(it.units) }
-                    val attackers = list.filter { cell.owner != it.owner }
-                    attackers.forEach { squad ->
-                        if (props.verbose) println("${squad.units} attacks ${cell.units} ${cell.x} ${cell.y}")
-                        val attacker = squad.units.toMutableMap()
-                        attacker.strike(cell.units)
-                        if (cell.units.hasUnits()) {
-                            cell.units.strike(attacker)
-                            if (attacker.hasUnits()) {
-                                squads.add(Squad(squad.owner, cell, squad.origin, attacker))
-                            } else {
-                                squad.owner.sendAndBroadcast(squad.destroyedEvent())
-                            }
-                        } else {
-                            cell.owner?.owned?.remove(cell)
-                            squad.owner.owned.add(cell)
-                            cell.addUnits(attacker)
-                            cell.sendAllAndBroadcast(cell.ownedEvent())
-                        }
-                    }
+    private suspend fun Cell.updateSquads(list: List<Squad>) {
+        list.filter { owner == it.owner }.forEach { addUnits(it.units) }
+        val attackers = list.filter { owner != it.owner }
+        attackers.forEach { squad ->
+            if (props.verbose) println("${squad.units} attacks $units $x $y")
+            val attacker = squad.units.toMutableMap()
+            attacker.strike(units)
+            if (units.hasUnits()) {
+                units.strike(attacker)
+                if (attacker.hasUnits()) {
+                    squads.add(Squad(squad.owner, this, squad.origin, attacker))
+                } else {
+                    squad.owner.sendAndBroadcast(squad.destroyedEvent())
                 }
-            }.awaitAll()
+            } else {
+                owner?.owned?.remove(this)
+                squad.owner.owned.add(this)
+                addUnits(attacker)
+                sendAllAndBroadcast(ownedEvent())
+            }
         }
     }
 
-    private suspend fun processIncoming() = coroutineScope {
-        players.values.map { player ->
-            async {
-                val incoming = player.incomingQueue.toList()
-                player.incomingQueue.clear()
-                incoming.forEach { e ->
-                    try {
-                        val cell = cells[e.x][e.y]
-                        when (e) {
-                            is Incoming.SquadSend -> if (cell.owner == player) cell.tryTakeUnits(e.units) {
-                                val target = cells[e.tx][e.ty]
-                                val squad = Squad(player, cell, target, e.units)
-                                if (props.verbose) println("${player.id} sending ${squad.units} from ${e.x} ${e.y} to ${e.tx} ${e.ty} (${squad.timeout})")
-                                squads.add(squad)
-                                cell.sendAllAndBroadcast(squad.sentEvent())
-                            }
-                            is Incoming.UnitBuy -> if (cell.owner == player) {
-                                if (player.tryTakeResources(e.units.cost) { cell.addUnits(e.units) }) {
-                                    cell.sendAllAndBroadcast(e.boughtEvent())
-                                }
-                            }
-                            is Incoming.Discover -> {
-                                player.discovered.add(cell)
-                                player.sendAndBroadcast(cell.discoveredEvent())
-                            }
-                            is Incoming.Own -> if (cell.owner == player) {
-                                player.owned.add(cell)
-                                cell.sendAllAndBroadcast(cell.ownedEvent())
-                            }
-                            is Incoming.BuildingUpgrade -> if (cell.owner == player) cell.buildingIn(e.building) {
-                                if (player.tryTakeResources(it.upgradeCost) { it.level++ }) {
-                                    cell.sendAllAndBroadcast(it.upgradedEvent())
-                                }
-                            }
-                            is Incoming.FieldUpgrade -> if (cell.owner == player) cell.fieldIn(e.resource) {
-                                if (player.tryTakeResources(it.upgradeCost) { it.level++ }) {
-                                    cell.sendAllAndBroadcast(it.upgradedEvent())
-                                }
-                            }
+    private suspend fun Player.processIncoming() {
+        val incoming = incomingQueue.toList()
+        incomingQueue.clear()
+        incoming.forEach { e ->
+            try {
+                val cell = cells[e.x][e.y]
+                when (e) {
+                    is Incoming.SquadSend -> if (cell.owner == this) cell.tryTakeUnits(e.units) {
+                        val target = cells[e.tx][e.ty]
+                        val squad = Squad(this, cell, target, e.units)
+                        if (props.verbose) println("$id sending ${squad.units} from ${e.x} ${e.y} to ${e.tx} ${e.ty} (${squad.timeout})")
+                        squads.add(squad)
+                        cell.sendAllAndBroadcast(squad.sentEvent())
+                    }
+                    is Incoming.UnitBuy -> if (cell.owner == this) {
+                        if (tryTakeResources(e.units.cost) { cell.addUnits(e.units) }) {
+                            cell.sendAllAndBroadcast(e.boughtEvent())
                         }
-                    } catch (e: Exception) {
+                    }
+                    is Incoming.Discover -> {
+                        discovered.add(cell)
+                        sendAndBroadcast(cell.discoveredEvent())
+                    }
+                    is Incoming.Own -> if (cell.owner == this) {
+                        owned.add(cell)
+                        cell.sendAllAndBroadcast(cell.ownedEvent())
+                    }
+                    is Incoming.BuildingUpgrade -> if (cell.owner == this) cell.buildingIn(e.building) {
+                        if (tryTakeResources(it.upgradeCost) { it.level++ }) {
+                            cell.sendAllAndBroadcast(it.upgradedEvent())
+                        }
+                    }
+                    is Incoming.FieldUpgrade -> if (cell.owner == this) cell.fieldIn(e.resource) {
+                        if (tryTakeResources(it.upgradeCost) { it.level++ }) {
+                            cell.sendAllAndBroadcast(it.upgradedEvent())
+                        }
                     }
                 }
+            } catch (e: Exception) {
             }
-        }.awaitAll()
+        }
     }
 
     // region dsl
