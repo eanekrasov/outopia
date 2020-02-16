@@ -26,6 +26,9 @@ tasks {
         }
         dependsOn("processResources")
     }
+    withType<Test> {
+        useJUnitPlatform()
+    }
     processResources {
         dependsOn(":js:browserWebpack")
         from(project(":js").projectDir.resolve("src/main/resources")) {
@@ -100,11 +103,12 @@ dependencies {
 
 }
 
-tasks.withType<Test> {
-    useJUnitPlatform()
-}
-
 configurations.all {
     exclude(module = "jakarta.validation-api")
     exclude(module = "hibernate-validator")
+    if (project.hasProperty("graal")) {
+        exclude(module = "netty-transport-native-epoll")
+        exclude(module = "netty-transport-native-unix-common")
+        exclude(module = "netty-codec-http2")
+    }
 }

@@ -1,14 +1,11 @@
 package ru.o4fun.models
 
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.BroadcastChannel
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.asFlow
+import ru.o4fun.annotations.DslScope
 import ru.o4fun.enums.Building
 import ru.o4fun.enums.Resource
-import ru.o4fun.annotations.DslScope
 import ru.o4fun.extensions.*
 import ru.o4fun.interfaces.*
 import ru.o4fun.properties.AppProperties
@@ -19,7 +16,10 @@ import kotlin.system.measureTimeMillis
 
 class World(
     val props: AppProperties.World
-) {
+) : CoroutineScope {
+    private val job = Job()
+
+    override val coroutineContext = job + Dispatchers.IO
 
     // region public
 
@@ -50,7 +50,7 @@ class World(
         }
     }
 
-    suspend fun startScheduler(verbose: Boolean = false, callback: (Scheduler) -> Unit) {
+    fun startScheduler(verbose: Boolean = false, callback: (Scheduler) -> Unit) = launch {
         var time = 0L
         var countExec: Int
         var count: Int
@@ -106,12 +106,21 @@ class World(
 
     private val eventsChannel = BroadcastChannel<Outgoing>(1)
 
+    private suspend fun Cell.sendAllAndBroadcast(it: Outgoing) {
+        sendAll(it, props.parentsLevel)
+        eventsChannel.send(it)
+    }
+
+    private suspend fun Player.sendAndBroadcast(it: Outgoing, parents: Boolean = true) {
+        send(it, if (parents) props.parentsLevel else 0)
+        eventsChannel.send(it)
+    }
+
     private suspend fun updateResources() = coroutineScope {
         players.values.map {
             async {
                 it.updateResources()
-                it.send(it.resourcesEvent(), 0)
-                eventsChannel.send(it.resourcesEvent())
+                it.sendAndBroadcast(it.resourcesEvent(), false)
             }
         }.awaitAll()
     }
@@ -134,15 +143,13 @@ class World(
                             if (attacker.hasUnits()) {
                                 squads.add(Squad(squad.owner, cell, squad.origin, attacker))
                             } else {
-                                squad.owner.send(squad.destroyedEvent(), props.parentsLevel)
-                                eventsChannel.send(squad.destroyedEvent())
+                                squad.owner.sendAndBroadcast(squad.destroyedEvent())
                             }
                         } else {
                             cell.owner?.owned?.remove(cell)
                             squad.owner.owned.add(cell)
                             cell.addUnits(attacker)
-                            cell.sendAll(cell.ownedEvent(), props.parentsLevel)
-                            eventsChannel.send(cell.ownedEvent())
+                            cell.sendAllAndBroadcast(cell.ownedEvent())
                         }
                     }
                 }
@@ -164,35 +171,29 @@ class World(
                                 val squad = Squad(player, cell, target, e.units)
                                 if (props.verbose) println("${player.id} sending ${squad.units} from ${e.x} ${e.y} to ${e.tx} ${e.ty} (${squad.timeout})")
                                 squads.add(squad)
-                                cell.sendAll(squad.sentEvent(), props.parentsLevel)
-                                eventsChannel.send(squad.sentEvent())
+                                cell.sendAllAndBroadcast(squad.sentEvent())
                             }
                             is Incoming.UnitBuy -> if (cell.owner == player) {
                                 if (player.tryTakeResources(e.units.cost) { cell.addUnits(e.units) }) {
-                                    cell.sendAll(e.boughtEvent(), props.parentsLevel)
-                                    eventsChannel.send(e.boughtEvent())
+                                    cell.sendAllAndBroadcast(e.boughtEvent())
                                 }
                             }
                             is Incoming.Discover -> {
                                 player.discovered.add(cell)
-                                player.send(cell.discoveredEvent(), props.parentsLevel)
-                                eventsChannel.send(cell.discoveredEvent())
+                                player.sendAndBroadcast(cell.discoveredEvent())
                             }
                             is Incoming.Own -> if (cell.owner == player) {
                                 player.owned.add(cell)
-                                cell.sendAll(cell.ownedEvent(), props.parentsLevel)
-                                eventsChannel.send(cell.ownedEvent())
+                                cell.sendAllAndBroadcast(cell.ownedEvent())
                             }
                             is Incoming.BuildingUpgrade -> if (cell.owner == player) cell.buildingIn(e.building) {
                                 if (player.tryTakeResources(it.upgradeCost) { it.level++ }) {
-                                    cell.sendAll(it.upgradedEvent(), props.parentsLevel)
-                                    eventsChannel.send(it.upgradedEvent())
+                                    cell.sendAllAndBroadcast(it.upgradedEvent())
                                 }
                             }
                             is Incoming.FieldUpgrade -> if (cell.owner == player) cell.fieldIn(e.resource) {
                                 if (player.tryTakeResources(it.upgradeCost) { it.level++ }) {
-                                    cell.sendAll(it.upgradedEvent(), props.parentsLevel)
-                                    eventsChannel.send(it.upgradedEvent())
+                                    cell.sendAllAndBroadcast(it.upgradedEvent())
                                 }
                             }
                         }

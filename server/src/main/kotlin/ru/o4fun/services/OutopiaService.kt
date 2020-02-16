@@ -1,7 +1,5 @@
 package ru.o4fun.services
 
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.event.EventListener
@@ -18,9 +16,7 @@ class OutopiaService(
     val world = World(props.world)
 
     @EventListener(ApplicationReadyEvent::class)
-    fun onApplicationReady() = GlobalScope.launch {
-        world.startScheduler(true) {
-            eventPublisher.publishEvent(SchedulerReady(it))
-        }
+    fun onApplicationReady() = world.startScheduler(true) {
+        eventPublisher.publishEvent(SchedulerReady(it))
     }
 }
