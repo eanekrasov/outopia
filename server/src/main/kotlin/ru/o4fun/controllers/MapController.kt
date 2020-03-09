@@ -9,12 +9,11 @@ import org.springframework.ui.Model
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.ResponseBody
-import org.springframework.web.reactive.result.view.Rendering
 import reactor.core.publisher.Flux
 import reactor.core.publisher.FluxSink
+import ru.o4fun.enums.CellType
 import ru.o4fun.exceptions.NotFoundException
 import ru.o4fun.interfaces.ICell
-import ru.o4fun.enums.CellType
 import ru.o4fun.properties.AppProperties
 import ru.o4fun.services.OutopiaService
 import java.awt.image.BufferedImage
@@ -32,21 +31,23 @@ class MapController(
     private val world = outopiaService.world
 
     @GetMapping("/map")
-    fun map(model: Model) = Rendering.view("map")
-        .modelAttribute("world", world)
-        .modelAttribute("width", world.props.width)
-        .modelAttribute("height", world.props.height)
-        .build()
+    fun map(model: Model): String {
+        model.addAttribute("world", world)
+        model.addAttribute("width", world.props.width)
+        model.addAttribute("height", world.props.height)
+        return "map"
+    }
 
     @GetMapping("/players/{id}/map")
     fun playerMap(
         @PathVariable("id") id: String,
         model: Model
-    ) = Rendering.view("playerMap")
-        .modelAttribute("player", world[id] ?: throw NotFoundException())
-        .modelAttribute("width", world.props.width)
-        .modelAttribute("height", world.props.height)
-        .build()
+    ): String {
+        model.addAttribute("player", world[id] ?: throw NotFoundException())
+        model.addAttribute("width", world.props.width)
+        model.addAttribute("height", world.props.height)
+        return "playerMap"
+    }
 
     @GetMapping("/map/{z}/{x}/{y}", produces = ["image/png"])
     @ResponseBody
@@ -114,15 +115,15 @@ class MapController(
         }
     }
 
-    private fun writeToServerResponse(bufferFactory: DataBufferFactory, write: (OutputStream) -> Unit) = Flux.create<DataBuffer>({ emitter ->
-        emitter.next(bufferFactory.allocateBuffer().apply {
+    private fun writeToServerResponse(bufferFactory: DataBufferFactory, write: (OutputStream) -> Unit): Flux<DataBuffer> = Flux.create({
+        it.next(bufferFactory.allocateBuffer().apply {
             asOutputStream().use { out ->
                 write(out)
                 // don't know if flushing is strictly necessary
                 out.flush()
             }
         })
-        emitter.complete()
+        it.complete()
     }, FluxSink.OverflowStrategy.BUFFER)
 
     fun List<BufferedImage>.deepCell(x: Int, y: Int) =
