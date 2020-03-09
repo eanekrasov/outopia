@@ -183,7 +183,7 @@
         <div class="game-city">
             <ul><li th:each="unit: ${cell.units}"><span th:text="${unit.key}"></span> <span th:text="${unit.value}"></span></li></ul>
             <th:block th:each="it : ${cell.value}">
-                <th:block th:if="${it instanceof T(ru.o4fun.interfaces.Value.Building)}">
+                <th:block th:if="${it instanceof T(ru.o4fun.interfaces.IValue.Building)}">
                     <div class="building" th:classappend="${it.building.className}">
                         <p th:text="${it.building.className} + ': ' + ${it.level}"></p>
                     </div>
