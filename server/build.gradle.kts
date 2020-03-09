@@ -67,6 +67,7 @@ dependencies {
     implementation(starter("data-jpa"))
     implementation(starter("thymeleaf"))
     implementation(starter("webflux"))
+    implementation(starter("security"))
     runtimeOnly(boot("devtools"))
 
     // endregion
